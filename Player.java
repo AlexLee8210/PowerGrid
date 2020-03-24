@@ -1,0 +1,40 @@
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class Player implements Comparable<Player> {
+	
+	private String color;
+	private int elektros;
+	private ArrayList<PowerPlant> plants;
+	
+	public Player() {
+		elektros = 50;
+		plants = new ArrayList<>();
+	}
+	public void setColor(String c) {
+		color = c;
+	}
+	public String getColor() {
+		return color;
+	}
+	public int getElektros() {
+		return elektros;
+	}
+	
+	public void addPlant(PowerPlant p) {
+		if(plants.size() < 4)
+			plants.add(p);
+		else {
+			
+		}
+		Collections.sort(plants);
+	}
+	
+	public PowerPlant getLargestPlant() {
+		return plants.get(plants.size()-1);
+	}
+	
+	public int compareTo(Player p) {
+		return getLargestPlant().compareTo(p.getLargestPlant());
+	}
+}
