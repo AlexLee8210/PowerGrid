@@ -6,10 +6,12 @@ public class Player implements Comparable<Player> {
 	private String color;
 	private int elektros;
 	private ArrayList<PowerPlant> plants;
+	private ArrayList<City> citiesOwned;
 	
 	public Player() {
 		elektros = 50;
 		plants = new ArrayList<>();
+		citiesOwned = new ArrayList<City>();
 	}
 	public void setColor(String c) {
 		color = c;
@@ -20,7 +22,13 @@ public class Player implements Comparable<Player> {
 	public int getElektros() {
 		return elektros;
 	}
-	
+	public ArrayList<City> getCities() {
+		return citiesOwned;
+	}
+	public void addCity(City c)
+	{
+		citiesOwned.add(c);
+	}
 	public void addPlant(PowerPlant p) {
 		if(plants.size() < 4)
 			plants.add(p);
@@ -29,7 +37,9 @@ public class Player implements Comparable<Player> {
 		}
 		Collections.sort(plants);
 	}
-	
+	public int getNumPlants() {
+		return plants.size();
+	}
 	public PowerPlant getLargestPlant() {
 		return plants.get(plants.size()-1);
 	}
