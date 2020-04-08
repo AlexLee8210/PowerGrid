@@ -4,20 +4,19 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 public class GameState {
-	
-	//private Board board;
+
+	// private Board board;
 	private JFrame frame;
 	private PowerGridPanel panel;
 	private int phase;
 	//
-	//- playerList : ArrayList<Player>
+	// - playerList : ArrayList<Player>
 	private Player[] players;
-	
+
 	public GameState() {
-		
+
 		players = new Player[4];
 		frame = new JFrame("Power Grid");
 		panel = new PowerGridPanel();
@@ -31,5 +30,41 @@ public class GameState {
 		frame.setIconImage(img);
 		frame.add(panel);
 		frame.setVisible(true);
+	}
+
+	public void nextPhase() {
+
+	}
+
+	public void nextTurn() {
+
+	}
+
+	public void determineOrder() {
+
+	}
+
+	public void auction() {
+
+	}
+
+	public void buyCities() {
+
+	}
+
+	public void buyResources() {
+
+	}
+
+	public void endRound() {
+
+	}
+
+	public void nextStep() {
+
+	}
+
+	public String[] chosenAreas() {
+		return null;
 	}
 }
