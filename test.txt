@@ -1,0 +1,45 @@
+NorthWest
+Seattle
+3
+Portland;3
+Boise;12
+Billings;9
+Portland
+3
+Seattle;3
+Boise;13
+San Francisco;24
+Boise
+6
+Seattle;12
+Portland;13
+San Francisco;23
+Salt Lake City;8
+Cheyenne;24
+Billings;12
+Billings
+5
+Seattle;9
+Boise;12
+Cheyenne;9
+Minneapolis;18
+Fargo;17
+Cheyenne
+5
+Billings;9
+Boise;24
+Denver;0
+Omaha;14
+Minneapolis;18
+Denver
+4
+Cheyenne;0
+Salt Lake City;21
+Santa Fe;13
+Kansas City;16
+Omaha
+4
+Cheyenne;14
+Kansas City;5
+Chicago;13
+Minneapolis;8

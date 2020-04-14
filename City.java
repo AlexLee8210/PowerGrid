@@ -1,52 +1,36 @@
 import java.util.ArrayList;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
-public class City implements Comparable<City> {
+public class City implements Comparable {
 	
 	private int cost;
 	private String name;
 	private String region;
-	private Player[] owners;
-	private TreeMap<Integer, ArrayList<City>> neighbors;
+	private LinkedHashMap<City, Integer> neighbors;
 	private boolean isActive;
-	
+	private int priority;
 	
 	public City(String name) {
-		owners = new Player[3];
 		this.name = name;
-		neighbors = new TreeMap<Integer, ArrayList<City>>();
+		neighbors = new LinkedHashMap<City, Integer>();
+		priority = Integer.MAX_VALUE;
 	}
 	
 	public City(String name, String region) {
-		owners = new Player[3];
 		this.name = name;
 		this.region = region;
-		neighbors = new TreeMap<Integer, ArrayList<City>>();
+		neighbors = new LinkedHashMap<City, Integer>();
 	}
 	
 	public void addNeighbor(City dest, int weight) {
-		ArrayList<City> temp;
-		if(neighbors.containsKey(weight))
-			temp = neighbors.get(weight);	
-		else
-			temp = new ArrayList<>();
-		temp.add(dest);
-		neighbors.put(weight, temp);
+		neighbors.put(dest, weight);
 	}
-	public TreeMap<Integer, ArrayList<City>> getNeighbors() {
+	public LinkedHashMap<City, Integer> getNeighbors() {
 		return neighbors;
 	}
 	
-	public boolean isFull() {
-		return owners[2] != null;
-	}
 	public int getCost() {
 		return cost;
-	}
-	public void buyCity(Player p) {
-		for(int i = 0; i < 2; i++)
-			if(owners[i] == null)
-				owners[i] = p;
 	}
 	public String getName() {
 		return name;
@@ -54,14 +38,31 @@ public class City implements Comparable<City> {
 	public String getRegion() {
 		return region;
 	}
-	public Player[] getOwners() {
-		return owners;
-	}
 	public boolean isActive() {
 		return isActive;
 	}
+	public void updatePriority(int p) {
+		priority = p;
+	}
+	public int compareTo(Object o) {
+		City c = (City) o;
+		if(neighbors.containsKey(c))
+			return neighbors.get(c);
+		
+		return -1;
+	}
 	
-	public int compareTo(City c) {
-		return name.compareTo(c.getName());
+	public boolean equals(Object o) {
+		City c = (City) o;
+		if(c.getName().equals(name))
+			return true;
+		return false;
+	}
+	@Override
+	public int hashCode() {
+		return name.hashCode();
+	}
+	public String toString() {
+		return name;
 	}
 }
