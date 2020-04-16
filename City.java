@@ -7,6 +7,7 @@ public class City implements Comparable {
 	private String name;
 	private String region;
 	private LinkedHashMap<City, Integer> neighbors;
+	private Player[] owners;
 	private boolean isActive;
 	private int priority;
 	
@@ -14,12 +15,31 @@ public class City implements Comparable {
 		this.name = name;
 		neighbors = new LinkedHashMap<City, Integer>();
 		priority = Integer.MAX_VALUE;
+		owners = new Player[3];
 	}
 	
 	public City(String name, String region) {
 		this.name = name;
 		this.region = region;
 		neighbors = new LinkedHashMap<City, Integer>();
+		owners = new Player[3];
+	}
+	
+	public boolean addOwner(Player player)
+	{
+		if(numOwners() == 3)
+			return false;
+		owners[numOwners()] = player;
+		return true;
+	}
+	
+	public int numOwners()
+	{
+		int num = 0;
+		for(int i = 0; i < owners.length; i++)
+			if(owners[i] != null)
+				num++;
+		return num;
 	}
 	
 	public void addNeighbor(City dest, int weight) {
