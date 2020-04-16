@@ -44,7 +44,21 @@ public class Player implements Comparable<Player> {
 		return plants.get(plants.size()-1);
 	}
 	
-	public int compareTo(Player p) {
+	public int compareTo(Player p) 
+	{
+		if(getCities() == null || p.getCities() == null)
+		{
+			if(getCities() != null)
+				return 1;
+			else if(p.getCities() != null)
+				return -1;
+			else if(p.getCities() == null)
+				return getLargestPlant().compareTo(p.getLargestPlant());
+		}
+		if(getCities().size() < p.getCities().size())
+			return -1;
+		else if(getCities().size() > p.getCities().size())
+			return 1;
 		return getLargestPlant().compareTo(p.getLargestPlant());
 	}
 }
