@@ -9,12 +9,19 @@ public class PowerPlant implements Comparable<PowerPlant> {
 	private int power;
 	private TreeMap<String, Integer> consumedMats;
 	private TreeMap<String, Integer> mats;
+	private boolean isHybrid;
 	
-	public PowerPlant(int num, int power, TreeMap<String, Integer> consumed) {
+	public PowerPlant(int num, int power, TreeMap<String, Integer> consumed, boolean isHybrid) {
 		this.num = num;
 		this.power = power;
 		consumedMats = consumed;
 		mats = new TreeMap<String, Integer>();
+		this.isHybrid = isHybrid;
+	}
+	
+	public boolean isHybrid()
+	{
+		return isHybrid;
 	}
 	
 	public int getNum() {
