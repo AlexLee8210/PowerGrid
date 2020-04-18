@@ -6,6 +6,8 @@ public class PowerPlant implements Comparable<PowerPlant> {
 	private int power;
 	private int consumedMats;
 	private int mats;
+	private int numCoal;//Only for hybrid
+	private int numOil;//Only for hybrid
 	private String type;
 	
 	public PowerPlant(int num, int power, int consumed, String type) {
@@ -14,6 +16,8 @@ public class PowerPlant implements Comparable<PowerPlant> {
 		consumedMats = consumed;
 		mats = 0;
 		this.type = type;
+		numCoal = 0;
+		numOil = 0;
 	}
 	
 	public String getType()
@@ -25,30 +29,61 @@ public class PowerPlant implements Comparable<PowerPlant> {
 		return num;
 	}
 	
+	public int getNumCoal() {
+		return numCoal;
+	}
+	
+	public int getNumOil() {
+		return numOil;
+	}
+	
 	public int getPower() {
 		return power;
 	}
 	
 	public int materialsTillFull()
 	{
+		if(getType().equals("hybrid"))
+		{
+			return consumedMats * 2 - (numCoal+numOil);
+		}
 		return consumedMats * 2 - mats;
 	}
 	
-	public void addMaterial(int amt)
+	public void addMaterial(ArrayList<String> materials)
 	{
-		mats += amt;
+		
 	}
 	
 	public boolean canPowerCity() 
 	{
-		if(mats - consumedMats >= 0)
-			return true;
-		return false;
+		if(getType().equals("hybrid"))
+			return (numCoal+numOil) - consumedMats >= 0;
+		return (mats - consumedMats >= 0);
 	}
 	
 	public void consumeMats()
 	{
-		mats -= consumedMats;
+		if(getType().equals("hybrid"))
+		{
+			if(numOil >= consumedMats) {
+				numOil -= consumedMats;
+			}	
+			else if(numCoal >= consumedMats) {
+				numCoal -= consumedMats;
+			}	
+			else if(numCoal > numOil) {
+				numCoal -= (consumedMats-1);
+				numOil -= 1;
+			}
+			else
+			{
+				numOil -= (consumedMats-1);
+				numCoal -= 1;
+			}	
+		}
+		else if(!getType().equals("wind"))
+			mats -= consumedMats;
 	}
 	
 	public int compareTo(PowerPlant p) {
