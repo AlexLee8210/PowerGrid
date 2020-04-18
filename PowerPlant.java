@@ -6,19 +6,19 @@ public class PowerPlant implements Comparable<PowerPlant> {
 	private int power;
 	private ArrayList<String> consumedMats;
 	private ArrayList<String> mats;
-	private boolean isHybrid;
+	private String type;
 	
-	public PowerPlant(int num, int power, ArrayList<String> consumed, boolean isHybrid) {
+	public PowerPlant(int num, int power, ArrayList<String> consumed, String type) {
 		this.num = num;
 		this.power = power;
 		consumedMats = consumed;
 		mats = new ArrayList<String>();
-		this.isHybrid = isHybrid;
+		this.type = type;
 	}
 	
-	public boolean isHybrid()
+	public String getType()
 	{
-		return isHybrid;
+		return type;
 	}
 	
 	public int getNum() {
