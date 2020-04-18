@@ -1,21 +1,18 @@
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeMap;
 
 public class PowerPlant implements Comparable<PowerPlant> {
 	
 	private int num;
 	private int power;
-	private TreeMap<String, Integer> consumedMats;
-	private TreeMap<String, Integer> mats;
+	private ArrayList<String> consumedMats;
+	private ArrayList<String> mats;
 	private boolean isHybrid;
 	
-	public PowerPlant(int num, int power, TreeMap<String, Integer> consumed, boolean isHybrid) {
+	public PowerPlant(int num, int power, ArrayList<String> consumed, boolean isHybrid) {
 		this.num = num;
 		this.power = power;
 		consumedMats = consumed;
-		mats = new TreeMap<String, Integer>();
+		mats = new ArrayList<String>();
 		this.isHybrid = isHybrid;
 	}
 	
@@ -32,52 +29,35 @@ public class PowerPlant implements Comparable<PowerPlant> {
 		return power;
 	}
 	
-	public TreeMap<String, Integer> materialsTillFull()
+	public int materialsTillFull()
 	{
-		TreeMap<String, Integer> toReturn = new TreeMap<String, Integer>();
-		Set<String> set = consumedMats.keySet();
-		Iterator<String> itr = set.iterator();
-		while(itr.hasNext())
-		{
-			String resourceType = itr.next();
-			int number = (consumedMats.get(resourceType) * 2) - mats.get(resourceType);
-			toReturn.put(resourceType, number);
-		}
-		return toReturn;
+		if(mats == null)
+			return consumedMats.size() * 2;
+		return consumedMats.size() * 2 - mats.size();
 	}
 	
-	public void addMaterial(TreeMap<String, Integer> materials)
+	public void addMaterial(ArrayList<String> materials)
 	{
-		Set<String> set = materials.keySet();
-		Iterator<String> itr = set.iterator();
-		while(itr.hasNext())
-		{
-			String resourceType = itr.next();
-			mats.put(resourceType, mats.get(resourceType) + materials.get(resourceType));
-		}
+		for(int i = 0; i < materials.size(); i++)
+			mats.add(materials.get(i));
 	}
 	
 	public boolean canPowerCity() 
 	{
-		Set<String> set = consumedMats.keySet();
-		Iterator<String> itr = set.iterator();
-		while(itr.hasNext())
-		{
-			String type = itr.next();
-			if(consumedMats.get(type) > mats.get(type))
-				return false;
-		}
-		return true;
+		if(mats == null)
+			return false;
+		else if(mats.size() - consumedMats.size() >= 0)
+			return true;
+		return false;
 	}
 	
 	public void consumeMats()
 	{
-		Set<String> set = mats.keySet();
-		Iterator<String> itr = set.iterator();
-		while(itr.hasNext())
+		int count = 0;
+		while(count != consumedMats.size())
 		{
-			String type = itr.next();
-			mats.put(type, mats.get(type) - consumedMats.get(type));
+			mats.remove(0);
+			count++;
 		}
 	}
 	
