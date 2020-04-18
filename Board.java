@@ -1,6 +1,9 @@
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Scanner;
 
 public class Board {
 	private ArrayList<PowerPlant> deck;
@@ -8,15 +11,24 @@ public class Board {
 	private LinkedHashMap<String, Integer> resourceMarket;
 	private Graph graph;
 	private int step;
-	public Board()
+	public Board() throws IOException
 	{
 		deck = new ArrayList<PowerPlant>();
-		// deck will be read in from text file
+		readPlantFile();
 		marketPlants = new ArrayList<PowerPlant>();
 		resourceMarket = new LinkedHashMap<String, Integer>();
 		graph = new Graph();
 		//havent seen the graph class yet so will edit later
 		step = 1;
+	}
+	public void readPlantFile() throws IOException
+	{
+		Scanner sc = new Scanner(new File("PowerPlant.txt"));
+		while(sc.hasNextLine())
+		{
+			String[] arr = sc.nextLine().split(" ");
+			deck.add(new PowerPlant(Integer.parseInt(arr[0]), Integer.parseInt(arr[1]), Integer.parseInt(arr[2]), arr[3]));
+		}
 	}
 	public ArrayList<PowerPlant> getDeck()
 	{
