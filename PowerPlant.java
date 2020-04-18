@@ -29,6 +29,11 @@ public class PowerPlant implements Comparable<PowerPlant> {
 		return num;
 	}
 	
+	public int getMats()
+	{
+		return mats;
+	}
+	
 	public int getNumCoal() {
 		return numCoal;
 	}
