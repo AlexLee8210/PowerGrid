@@ -40,6 +40,9 @@ public class Player implements Comparable<Player> {
 	public int getNumPlants() {
 		return plants.size();
 	}
+	public ArrayList<PowerPlant> getPlants(){
+		return plants;
+	}
 	public PowerPlant getLargestPlant() {
 		return plants.get(plants.size()-1);
 	}
