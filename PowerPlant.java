@@ -4,15 +4,15 @@ public class PowerPlant implements Comparable<PowerPlant> {
 	
 	private int num;
 	private int power;
-	private ArrayList<String> consumedMats;
-	private ArrayList<String> mats;
+	private int consumedMats;
+	private int mats;
 	private String type;
 	
-	public PowerPlant(int num, int power, ArrayList<String> consumed, String type) {
+	public PowerPlant(int num, int power, int consumed, String type) {
 		this.num = num;
 		this.power = power;
 		consumedMats = consumed;
-		mats = new ArrayList<String>();
+		mats = 0;
 		this.type = type;
 	}
 	
@@ -31,34 +31,24 @@ public class PowerPlant implements Comparable<PowerPlant> {
 	
 	public int materialsTillFull()
 	{
-		if(mats == null)
-			return consumedMats.size() * 2;
-		return consumedMats.size() * 2 - mats.size();
+		return consumedMats * 2 - mats;
 	}
 	
-	public void addMaterial(ArrayList<String> materials)
+	public void addMaterial(int amt)
 	{
-		for(int i = 0; i < materials.size(); i++)
-			mats.add(materials.get(i));
+		mats += amt;
 	}
 	
 	public boolean canPowerCity() 
 	{
-		if(mats == null)
-			return false;
-		else if(mats.size() - consumedMats.size() >= 0)
+		if(mats - consumedMats >= 0)
 			return true;
 		return false;
 	}
 	
 	public void consumeMats()
 	{
-		int count = 0;
-		while(count != consumedMats.size())
-		{
-			mats.remove(0);
-			count++;
-		}
+		mats -= consumedMats;
 	}
 	
 	public int compareTo(PowerPlant p) {
