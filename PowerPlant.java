@@ -50,9 +50,15 @@ public class PowerPlant implements Comparable<PowerPlant> {
 		return consumedMats * 2 - mats;
 	}
 	
-	public void addMaterial(ArrayList<String> materials)
+	public void addMaterial(int amt)
 	{
-		
+		mats += amt;
+	}
+	
+	public void addMaterialHybrid(int coal, int oil)
+	{
+		numCoal += coal;
+		numOil += oil;
 	}
 	
 	public boolean canPowerCity() 
