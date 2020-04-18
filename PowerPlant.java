@@ -58,4 +58,8 @@ public class PowerPlant implements Comparable<PowerPlant> {
 			return -1;
 		return 0;
 	}
+	public String toString() // for testing
+	{
+		return getNum() + " " + getPower() + " " + consumedMats + " " + getType();
+	}
 }
