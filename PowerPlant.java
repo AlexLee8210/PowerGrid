@@ -82,6 +82,7 @@ public class PowerPlant implements Comparable<PowerPlant> {
 		return mats == (consumedMats*2);
 	}
 	
+	
 	public void consumeMats()
 	{
 		if(getType().equals("hybrid"))
