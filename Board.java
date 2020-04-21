@@ -117,7 +117,10 @@ public class Board {
 	public ArrayList<Player> determineOrder(ArrayList<Player> players)
 	{
 		Collections.sort(players);
-		return players;
+		ArrayList<Player> temp = new ArrayList<Player>();
+		for(int i = players.size() - 1; i > 0; i--)
+			temp.add(players.get(i));
+		return temp;
 	}
 	public ArrayList<PowerPlant> auction()
 	{
