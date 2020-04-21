@@ -22,6 +22,10 @@ public class Player implements Comparable<Player> {
 	public int getElektros() {
 		return elektros;
 	}
+	public void buy(int cost)
+	{
+		elektros -= cost;
+	}
 	public ArrayList<City> getCities() {
 		return citiesOwned;
 	}
@@ -43,6 +47,7 @@ public class Player implements Comparable<Player> {
 	public ArrayList<PowerPlant> getPlants(){
 		return plants;
 	}
+	
 	public PowerPlant getLargestPlant() {
 		return plants.get(plants.size()-1);
 	}
