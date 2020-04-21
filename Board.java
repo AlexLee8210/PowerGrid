@@ -17,7 +17,8 @@ public class Board {
 	{
 		deck = new ArrayList<PowerPlant>();
 		readPlantFile();
-		marketPlants = new ArrayList<PowerPlant>();
+		Collections.shuffle(deck);
+		marketPlants = new ArrayList<PowerPlant>();//should have 8 plants
 		resourceMarket = new TreeMap<String, Integer>();
 		resourceMarket.put("coal", 24);
 		resourceMarket.put("oil", 18);
@@ -134,7 +135,19 @@ public class Board {
 	} 
 	public void reOrgMarketPlants()
 	{
-		//TODO
+		Collections.shuffle(marketPlants);
+	}
+	public Player buyPlant(Player player, int cost, int plantIndex)
+	{
+		player.buy(cost);
+		player.addPlant(marketPlants.remove(plantIndex));
+		return player;
+	}
+	public PowerPlant draw()
+	{
+		if(deck == null)
+			return null;
+		return deck.remove(deck.size()-1);
 	}
 	public Player getWinner(Player[] players)
 	{
