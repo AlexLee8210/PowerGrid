@@ -47,6 +47,24 @@ public class Player implements Comparable<Player> {
 	public ArrayList<PowerPlant> getPlants(){
 		return plants;
 	}
+	public ArrayList<String> removePlant(int index)
+	{
+		PowerPlant removed = plants.remove(index);
+		ArrayList<String> toReturn = new ArrayList<String>();
+		if(removed.getType().equals("hybrid"))
+		{
+			for(int i = 0; i < removed.getNumCoal(); i++)
+				toReturn.add("coal");
+			for(int i = 0; i < removed.getNumOil(); i++)
+				toReturn.add("oil");
+		}
+		else if(!removed.getType().equals("wind"))
+		{
+			for(int i = 0; i < removed.getMats(); i++)
+				toReturn.add(removed.getType());
+		}
+		return toReturn;
+	}
 	
 	public PowerPlant getLargestPlant() {
 		return plants.get(plants.size()-1);
