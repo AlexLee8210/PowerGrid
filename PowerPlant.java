@@ -73,6 +73,15 @@ public class PowerPlant implements Comparable<PowerPlant> {
 		return (mats - consumedMats >= 0);
 	}
 	
+	public boolean isFull()
+	{
+		if(type.equals("hybrid"))
+			return (numCoal+numOil) == (consumedMats*2);
+		else if(type.equals("wind"))
+			return true;
+		return mats == (consumedMats*2);
+	}
+	
 	public void consumeMats()
 	{
 		if(getType().equals("hybrid"))
