@@ -122,14 +122,63 @@ public class Board {
 			temp.add(players.get(i));
 		return temp;
 	}
-	public ArrayList<PowerPlant> auction()
+	public int moneyBuy(PowerPlant p, Player play)
 	{
-		//TODO
-		return new ArrayList<PowerPlant>();
+		int cash = play.getElektros(), amt = resourceMarket.get(p.getType()), cost = 0, count = 0;
+		while(cost < cash && cash > 0 && amt > 0)
+		{
+			if(p.getType().equals("uranium"))
+				cost = calcCostUranium(amt);
+			else
+				cost = calcCost(amt);
+			cash -= cost;
+			if(cash <= 0)					
+				break;
+			count++;
+		}
+		return count;
 	}
-	public void buyResources(Player player, ArrayList<String> mats, PowerPlant plant)
+	public int calcCostUranium(int amt)
 	{
-		//TODO
+		if(amt < 5)
+			return 18 - (2*(amt));
+		return 9 - (amt-4);
+
+	}
+	public int calcCost(int amt)
+	{
+		double amount = amt/3.0;
+		double excess = amount%((int)amount);
+		amt = amt/3;
+		if(excess > 0)
+			return 8 - amt;
+		return 9-amt;
+	}
+	public void buyResources(Player player, int amt, PowerPlant plant)
+	{
+		for(int i = 0; i < amt; i++)
+		{
+			if(plant.getType().equals("uranium"))
+				player.buy(calcCostUranium(resourceMarket.get("uranium")));
+			else
+				player.buy(calcCost(resourceMarket.get(plant.getType())));
+			resourceMarket.put(plant.getType(), resourceMarket.get(plant.getType())-1);
+		}
+		plant.addMaterial(amt);
+	}
+	public void buyResourcesHybrid(Player player, int c, int o, PowerPlant p)
+	{
+		for(int i = 0; i < c; i++)
+		{
+			player.buy(calcCost(resourceMarket.get("coal")));
+			resourceMarket.put("coal", resourceMarket.get("coal")-1);
+		}
+		for(int i = 0; i < o; i++)
+		{
+			player.buy(calcCost(resourceMarket.get("oil")));
+			resourceMarket.put("oil", resourceMarket.get("oil")-1);
+		}
+		p.addMaterialHybrid(c, o);
 	}
 	public boolean canBuyCity(Player player, City city, int step)
 	{
