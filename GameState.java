@@ -277,7 +277,50 @@ public class GameState {
 	}
 
 	public void buyResources() {
-		
+		setTurn(3);
+		for(int i = 0; i < 4; i++)
+		{
+			boolean clickedNext = false; 
+			while(true)
+			{
+				clickedNext = false; //panel checks if player clicks next(doesn't buy materials again)
+				if(clickedNext)
+					break; //this means it only breaks out of the while loop right?
+				int powerPlant = -1; //panel returns index of the chosen power plant
+				PowerPlant p = players.get(turn).getPlants().get(powerPlant);
+				if(!p.getType().equals("wind"))
+				{
+					if((p.getType().equals("hybrid") && (board.getResourceMarket().get("coal") > 0 || board.getResourceMarket().get("oil") > 0)) || (!p.getType().equals("hybrid") && board.getResourceMarket().get(p.getType()) > 0))
+					{
+						int maxBuy = p.materialsTillFull();
+						if(p.getType().equals("hybrid") && (board.getResourceMarket().get("coal") + board.getResourceMarket().get("oil")) < maxBuy)
+							maxBuy = board.getResourceMarket().get("coal") + board.getResourceMarket().get("oil");
+						else if(board.getResourceMarket().get(p.getType()) < maxBuy)
+							maxBuy = board.getResourceMarket().get(p.getType());
+						if(!p.getType().equals("hybrid") && board.moneyBuy(p, players.get(turn)) < maxBuy)
+							maxBuy = board.moneyBuy(p, players.get(turn));
+						if(p.getType().equals("hybrid"))
+						{
+							int numCoal = -1; //panel returns number of coal bought
+							int numOil = -1; //panel returns number of oil bought
+							//use maxBuy for the maximum number of both to be bought
+							//NOTE: I did not calculate if the player would have enough money
+							board.buyResourcesHybrid(players.get(turn), numCoal, numOil, p);
+						}
+						else
+						{
+							int boughtAmt = -1; //panel returns number of resources bought
+							//use maxBuy for the maximum able to buy
+							board.buyResources(players.get(turn), boughtAmt, p);
+						}
+						
+					}
+				}
+				//panel goes back to allow player to choose another plant or move onto the next player
+			}
+			nextTurnReverse();
+		}
+		setTurn(0);
 	}
 
 	public void endRound() {
