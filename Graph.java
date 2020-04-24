@@ -32,6 +32,10 @@ public class Graph {
 	public City get(String name) {
 		return cities.get(name);
 	}
+	public HashMap<String, City> getCities()
+	{
+		return cities;
+	}
 	
 	private HashMap<String, Object> makeSPT(City src) {
 		HashMap<City, Integer> totalCosts = new HashMap<>();
