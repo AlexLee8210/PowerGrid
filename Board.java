@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
@@ -13,6 +14,7 @@ public class Board {
 	private TreeMap<String, Integer> resourceMarket;//used to be LinkedHashMap
 	private Graph graph;
 	private int step;
+
 	public Board() throws IOException
 	{
 		deck = new ArrayList<PowerPlant>();
@@ -180,11 +182,119 @@ public class Board {
 		}
 		p.addMaterialHybrid(c, o);
 	}
-	public boolean canBuyCity(Player player, City city, int step)
+	public ArrayList<City> cityList()
 	{
-		//TODO
-		return false;
+		HashMap<String, City> cities = graph.getCities();
+		Set<String> citySet = cities.keySet();
+		ArrayList<City> city = new ArrayList<City>();
+		Iterator<String> itr = citySet.iterator();
+		while(itr.hasNext())
+		{
+			city.add(cities.get(itr.next()));
+		}
+		return city;
+	}
+	public boolean canBuyCity(Player player, City city)//checks if player has enough money, if city has too many owners, and if player already has the city
+	{
+		ArrayList<City> playerCity = player.getCities();
+		for(int i = 0; i < playerCity.size(); i++)
+		{
+			if(playerCity.get(i).getName().equals(city.getName()))
+				return false;
+		}
+		if(city.numOwners() == step) //step 1 = 1 owner, step 2 = 2 owners, etc
+			return false;
+		int cost = Integer.MAX_VALUE;
+		for(City c : playerCity)
+		{
+			if(cost > graph.getShortestPathCost(c, city))
+				cost = graph.getShortestPathCost(c, city);
+		}
+		cost += 10 + 5 * city.numOwners();
+		if(player.getElektros() < cost)
+			return false;
+		return true;
 	} 
+	public ArrayList<City> canConnect(Player player)
+	{
+		ArrayList<City> toReturn = cityList();
+		for(int i = toReturn.size()-1; i > 0; i--)
+		{
+			if(!canBuyCity(player, toReturn.get(i)))
+				toReturn.remove(i);
+		}
+		return toReturn;
+	}
+	public void buyCity(City city, Player player)
+	{
+		int cost = Integer.MAX_VALUE;
+		Set<String> citySet = graph.getCities().keySet();
+		Iterator<String> itr = citySet.iterator();
+		while(itr.hasNext())
+		{
+			String next = itr.next();
+			if(city.getName().equals(next))
+			{
+				graph.getCities().get(next).addOwner(player);
+				ArrayList<City> playerCities = player.getCities();
+				for(City c : playerCities)
+				{
+					if(cost > graph.getShortestPathCost(c, city))
+						cost = graph.getShortestPathCost(c, city);
+				}
+				cost += 10 + 5 * city.numOwners();
+				player.buy(cost);
+				player.addCity(graph.getCities().get(next));
+			}
+		}
+	}
+	public int checkPowerPlant(Player player, ArrayList<Player> players)
+	{
+		int numCity = player.getCities().size();
+		int count = 0;
+		for(int i = marketPlants.size()-1; i > 0; i--)
+		{
+			if(numCity > marketPlants.get(i).getNum())
+			{
+				marketPlants.remove(i);
+				count++;
+			}
+		}
+		boolean sstep = false;
+		for(int i = 0; i < count; i++)
+		{
+			PowerPlant plant = draw(players);
+			if(plant == null)
+			{
+				return step;
+			}
+			else if(plant.getNum() == 99)
+			{
+				plant = draw(players);
+				if(plant == null)
+					return step;
+				sstep = true;
+			}
+			marketPlants.add(plant);
+		}
+		reOrgMarketPlants();
+		if(sstep == true)
+			return 3;
+		return step;
+	}
+	public int removeLowestAndReplace(ArrayList<Player> players)
+	{
+		int toReturn = step;
+		marketPlants.remove(0);
+		PowerPlant plant = draw(players);
+		if(plant == null)
+			return step;
+		else if(plant.getNum() == 99)
+			toReturn = 3;
+		marketPlants.add(plant);
+		reOrgMarketPlants();
+		return toReturn;
+	}
 	public void reOrgMarketPlants()
 	{
 		Collections.shuffle(marketPlants);
@@ -195,16 +305,33 @@ public class Board {
 		player.addPlant(marketPlants.remove(plantIndex));
 		return player;
 	}
-	public PowerPlant draw()
+	public PowerPlant draw(ArrayList<Player> players)
 	{
 		if(deck == null)
 			return null;
-		return deck.remove(deck.size()-1);
+		PowerPlant plant = deck.remove(deck.size()-1);
+		int leadingPlayer = Integer.MIN_VALUE;
+		for(int i = 0; i < players.size(); i++)
+		{
+			if(players.get(i).getCities().size() > leadingPlayer)
+				leadingPlayer = players.get(i).getCities().size();
+		}
+		while(plant.getNum() < leadingPlayer)
+		{
+			plant = deck.remove(deck.size()-1);
+		}
+		return plant;
 	}
-	public Player getWinner(Player[] players)
+	public void step3()
+	{
+		reOrgMarketPlants();
+		marketPlants.remove(0);
+		marketPlants.remove(marketPlants.size()-1);
+	}
+	public Player getWinner(ArrayList<Player> players)
 	{
 		//TODO
-		return players[0];
+		return players.get(0);
 	}
 	public void setActiveRegions(ArrayList<String> regions)
 	{
