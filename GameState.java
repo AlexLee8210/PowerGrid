@@ -2,6 +2,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -26,7 +27,7 @@ public class GameState {
 		frame.setSize(1280, 700);
 		BufferedImage img = null;
 		try {
-			img = ImageIO.read(new File("src/images/ui/factory.png"));
+			img = ImageIO.read(new File("factory.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -70,6 +71,7 @@ public class GameState {
 			bought.add(i);
 		setTurn(0);
 		boolean didPass = false;
+		boolean step3 = false;
 		int plantsBought = 0, powerPlant = -1, currentBid = 0;
 		while(bought != null)
 		{
@@ -92,7 +94,7 @@ public class GameState {
 				else if(bought.size() == 1)
 				{
 					players.set(turn, board.buyPlant(players.get(turn), currentBid, powerPlant));
-					reOrgPlant();
+					step3 = reOrgPlant();
 					plantsBought++;
 				}
 				else 
@@ -113,7 +115,7 @@ public class GameState {
 							else if(temp.size() == 1)
 							{
 								players.set(turn, board.buyPlant(players.get(turn), currentBid, powerPlant));
-								reOrgPlant();
+								step3 = reOrgPlant();
 								plantsBought++;
 							}
 							else
@@ -129,7 +131,7 @@ public class GameState {
 		}
 		if(plantsBought == 0) {
 			board.getMarketPlants().remove(0);
-			reOrgPlant();
+			step3 = reOrgPlant();
 		}
 		setTurn(0);
 		for(int i = 0; i < players.size(); i++)
@@ -142,6 +144,10 @@ public class GameState {
 					redistribute(materials);
 			}
 			nextTurn();
+		}
+		if(step3)
+		{
+			step3();
 		}
 		setTurn(0);
 	}
@@ -260,20 +266,74 @@ public class GameState {
 		}
 	}
 	
-	public void reOrgPlant()
+	public boolean reOrgPlant()
 	{
-		PowerPlant newPlant = board.draw();
-		if(newPlant.getNum() == 99)
+		boolean toReturn = false;
+		PowerPlant newPlant = board.draw(players);
+		if(newPlant == null)
+			return false;
+		else if(newPlant.getNum() == 99)
 		{
-			setStep(3);
-			newPlant = board.draw();
+			toReturn = true;
 		}	
 		board.getMarketPlants().add(newPlant);
 		board.reOrgMarketPlants();
+		return toReturn;
 	}
 
 	public void buyCities() {
-
+		setTurn(3);
+		boolean step3 = false;
+		for(int i = 0; i < 4; i++)
+		{
+			boolean clickedNext = false;
+			while(true)
+			{
+				clickedNext = false; //panel checks if player clicks next(doesnt buy a city)
+				if(clickedNext)
+					break;
+				ArrayList<City> canConnect = board.canConnect(players.get(turn));
+				City city = new City("urmum"); //panel returns the city that the player chooses
+				//use canConnect for the cities that the player can connect to
+				int numOwners = city.numOwners();
+				//put player's house on the city, use numOwners for which place to put it on
+				board.buyCity(city, players.get(turn));
+				if(board.checkPowerPlant(players.get(turn), players) == 3);
+					step3 = true;
+			}
+		}
+		setTurn(0);
+		boolean step2 = false;
+		if(step >= 2)
+			step2 = true;
+		else if(step == 1)
+			step2 = false;
+		if(!step2)
+		{
+			for(int i = 0; i < players.size(); i++)
+			{
+				if(players.get(i).getCities().size() >= 7)
+				{
+					setStep(2);
+					step2 = true;
+				}
+			}
+			if(step2)
+			{
+				if(board.removeLowestAndReplace(players) == 3);
+				step3 = true;
+			}
+		}
+		for(int i = 0; i < players.size(); i++)
+		{
+			if(players.get(i).getCities().size() >= 17)
+				endGame();
+		}
+		if(step3)
+		{
+			step3();
+		}	
+		setTurn(0);
 	}
 
 	public void buyResources() {
@@ -325,6 +385,18 @@ public class GameState {
 
 	public void endRound() {
 
+	}
+	
+	public void endGame() {
+		Player winner = board.getWinner(players);
+		//panel displays win screen 
+	}
+	
+	public void step3()
+	{
+		board.step3();
+		setStep(3);
+		Collections.shuffle(board.getDeck());//work?
 	}
 
 	public void setStep(int step) {
