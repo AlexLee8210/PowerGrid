@@ -1,4 +1,5 @@
-NorthWest
+............................NORTHWEST................................
+Northwest
 Seattle
 3
 Portland;3
@@ -43,3 +44,224 @@ Cheyenne;14
 Kansas City;5
 Chicago;13
 Minneapolis;8
+............................SOUTHWEST................................
+Southwest
+San Francisco
+5
+Portland;24
+Boise;23
+Salt Lake City;27
+Las Vegas;14
+Los Angeles;9
+Salt Lake City
+5
+Boise;8
+San Francisco;27
+Las Vegas;18
+Santa Fe;28
+Denver;21
+Las Vegas
+6
+San Francisco;14
+Los Angeles;9
+San Diego;9
+Phoenix;15
+Santa Fe;27
+Salt Lake City;18
+Los Angeles
+3
+San Francisco;9
+Las Vegas;9
+San Diego;3
+San Diego
+3
+Los Angeles;3
+Las Vegas;9
+Phoenix;14
+Phoenix
+3
+San Diego;14
+Las Vegas;15
+Santa Fe;18
+Santa Fe
+8
+Denver;13
+Salt Lake City;28
+Las Vegas;27
+Phoenix;18
+Houston;21
+Dallas;16
+Oklahoma City;15
+Kansas City;16
+............................SOUTH................................
+South
+Kansas City
+7
+Omaha;5
+Denver;16
+Santa Fe;16
+Oklahoma City;8
+Memphis;12
+St. Louis;6
+Chicago;8
+Oklahoma City
+4
+Kansas City;8
+Santa Fe;15
+Dallas;3
+Memphis;14
+Dallas
+5
+Oklahoma City;3
+Santa Fe;16
+Houston;5
+New Orleans;12
+Memphis;12
+Houston
+3
+Santa Fe;21
+Dallas;5
+New Orleans;8
+New Orleans
+5
+Houston;6
+Dallas;12
+Memphis;7
+Birmingham;11
+Jacksonville;13
+Memphis
+6
+Birmingham;6
+New Orleans;7
+Dallas;12
+Oklahoma City;14
+Kansas City;12
+St. Louis;7
+Birmingham
+4
+Memphis;6
+New Orleans;11
+Jacksonville;9
+Atlanta;3
+............................Midwest	................................
+Midwest
+Fargo
+3
+Billings;17
+Minneapolis;6
+Duluth;6
+Minneapolis
+5
+Fargo;6
+Billings;18
+Cheyenne;18
+Omaha;8
+Chicago;8
+Duluth
+3
+Fargo;6
+Chicago;12
+Detroit;15
+Chicago
+7
+Duluth;12
+Minneapolis;8
+Omaha;13
+Kansas City;8
+St. Louis;10
+Cincinnati;7
+Detroit;7
+St. Louis
+5
+Kansas City;6
+Memphis;7
+Atlanta;12
+Cincinnati;12
+Chicago;10
+Cincinnati
+6
+Chicago;7
+St. Louis;12
+Knoxville;6
+Raleigh;15
+Pittsburgh;7
+Detroit;4
+Knoxville
+2
+Cincinnati;6
+Atlanta;5
+............................SOUTHEAST................................
+Southeast
+Atlanta
+5
+Knoxville;5
+St. Louis;12
+Birmingham;3
+Savannah;7
+Raleigh;7
+Miami
+1
+Tampa;4
+Tampa
+2
+Miami;4
+Jacksonville;4
+Jacksonville
+4
+Savannah;0
+Birmingham;9
+New Orleans;16
+Tampa;4
+Savannah
+3
+Raleigh;7
+Atlanta;7
+Jacksonville;0
+Raleigh
+5
+Norfolk;3
+Pittsburgh;7
+Cincinnati;15
+Atlanta;7
+Savannah;7
+Norfolk
+2
+Washington;5
+Raleigh;3
+............................NORTHWEST............................
+Northwest
+Washington
+3
+Norfolk;5
+Philadelphia;3
+Pittsburgh;6
+Pittsburgh
+5
+Buffalo;7
+Detroit;6
+Cincinnati;7
+Raleigh;7
+Washington;6
+Detroit
+5
+Duluth;15
+Chicago;7
+Cincinnati;4
+Pittsburgh;6
+Buffalo;7
+Buffalo
+3
+Detroit;7
+Pittsburgh;7
+New York;8
+New York
+2
+Boston;3
+Philadelphia;0
+Boston
+1
+New York;3
+Philadelphia
+2
+New York;0
+Washington;3
