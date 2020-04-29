@@ -14,13 +14,24 @@ public class Board {
 	private TreeMap<String, Integer> resourceMarket;//used to be LinkedHashMap
 	private Graph graph;
 	private int step;
+	private TreeMap<Integer, Integer> paymentTable;
 
 	public Board() throws IOException
 	{
 		deck = new ArrayList<PowerPlant>();
 		readPlantFile();
-		Collections.shuffle(deck);
+		Collections.sort(deck);
 		marketPlants = new ArrayList<PowerPlant>();//should have 8 plants
+		for(int i = 7; i > 0; i--)
+			marketPlants.add(deck.remove(i));
+		Collections.sort(marketPlants);
+		for(int i = deck.size()-1; i > 0; i--) {
+			if(deck.get(i).getNum() == 13)
+				deck.remove(i);
+		}
+		Collections.shuffle(deck);
+		for(int i = 0; i < 4; i++)
+			deck.remove(i);
 		resourceMarket = new TreeMap<String, Integer>();
 		resourceMarket.put("coal", 24);
 		resourceMarket.put("oil", 18);
@@ -29,6 +40,8 @@ public class Board {
 		graph = new Graph();
 		//havent seen the graph class yet so will edit later
 		step = 1;
+		paymentTable = new TreeMap<Integer, Integer>();
+		readPaymentFile();
 	}
 	public void readPlantFile() throws IOException
 	{
@@ -38,6 +51,19 @@ public class Board {
 			String[] arr = sc.nextLine().split(" ");
 			deck.add(new PowerPlant(Integer.parseInt(arr[0]), Integer.parseInt(arr[1]), Integer.parseInt(arr[2]), arr[3]));
 		}
+	}
+	public void readPaymentFile() throws IOException
+	{
+		Scanner sc = new Scanner(new File("Payment.txt"));
+		while(sc.hasNextLine())
+		{
+			String[] arr = sc.nextLine().split(" ");
+			paymentTable.put(Integer.parseInt(arr[0]), Integer.parseInt(arr[1]));
+		}
+	}
+	public TreeMap<Integer, Integer> getPaymentTable()
+	{
+		return paymentTable;
 	}
 	public ArrayList<PowerPlant> getDeck()
 	{
@@ -56,7 +82,7 @@ public class Board {
 	public Graph getGraph() {
 		return graph;
 	}
-	public void updateResourceMarket(Player[] players)
+	public void updateResourceMarket(ArrayList<Player> players)
 	{
 		TreeMap<String, Integer> remain = new TreeMap<String, Integer>();
 		remain.put("coal", 24);
@@ -295,9 +321,22 @@ public class Board {
 		reOrgMarketPlants();
 		return toReturn;
 	}
+	public int removeHighestAndReplace(ArrayList<Player> players)
+	{
+		int toReturn = step;
+		deck.add(0, marketPlants.remove(marketPlants.size()-1));
+		PowerPlant plant = draw(players);
+		if(plant == null)
+			return step;
+		else if(plant.getNum() == 99)
+			toReturn = 3;
+		marketPlants.add(plant);
+		reOrgMarketPlants();
+		return toReturn;
+	}
 	public void reOrgMarketPlants()
 	{
-		Collections.shuffle(marketPlants);
+		Collections.sort(marketPlants);
 	}
 	public Player buyPlant(Player player, int cost, int plantIndex)
 	{
@@ -328,10 +367,39 @@ public class Board {
 		marketPlants.remove(0);
 		marketPlants.remove(marketPlants.size()-1);
 	}
-	public Player getWinner(ArrayList<Player> players)
+	public int canSupply(Player player)
 	{
-		//TODO
-		return players.get(0);
+		int toReturn = player.getCities().size();
+		int canPower = 0;
+		for(PowerPlant p : player.getPlants())
+		{
+			if(p.canPowerCity())
+				canPower += p.getNum();
+		}
+		if(canPower < toReturn)
+			toReturn = canPower;
+		return toReturn;
+	}
+	public void bureacracy(Player player, int num)
+	{
+		for(int i = 0; i < player.getPlants().size(); i++)
+			player.getPlants().get(i).consumeMats();
+		if(num > 20)
+			num = 20;
+		player.addElektros(paymentTable.get(num));
+	}
+	public Player getWinner(ArrayList<Player> players)//possibly faulty
+	{
+		int index = -1, numSupply = Integer.MIN_VALUE;
+		for(int i = 0; i < players.size(); i++)
+		{
+			if(canSupply(players.get(i)) > numSupply)
+			{
+				index = i;
+				numSupply = canSupply(players.get(i));
+			}
+		}
+		return players.get(index);
 	}
 	public void setActiveRegions(ArrayList<String> regions)
 	{
