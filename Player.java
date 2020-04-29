@@ -22,6 +22,9 @@ public class Player implements Comparable<Player> {
 	public int getElektros() {
 		return elektros;
 	}
+	public void addElektros(int amt) {
+		elektros += amt;
+	}
 	public void buy(int cost)
 	{
 		elektros -= cost;
