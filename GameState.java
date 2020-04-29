@@ -38,7 +38,6 @@ public class GameState {
 
 	public void nextPhase() {
 		phase = (phase + 1) % 4;
-		//if else for each phase?
 	}
 
 	public void nextTurn() {
@@ -145,7 +144,9 @@ public class GameState {
 			}
 			nextTurn();
 		}
-		if(step3)
+		if(step == 3) //NEW
+			step3 = false;
+		else if(step3)
 		{
 			step3();
 		}
@@ -300,6 +301,8 @@ public class GameState {
 				board.buyCity(city, players.get(turn));
 				if(board.checkPowerPlant(players.get(turn), players) == 3);
 					step3 = true;
+				if(step == 3) //NEW
+					step3 = false;
 			}
 		}
 		setTurn(0);
@@ -384,7 +387,25 @@ public class GameState {
 	}
 
 	public void endRound() {
-
+		setTurn(0);
+		boolean step3 = false;
+		for(int i = 0; i < players.size(); i++)
+		{
+			int canSupply = board.canSupply(players.get(turn));
+			int numSupplied = -1; //panel returns how many cities player chooses to supply
+			board.bureacracy(players.get(turn), numSupplied);
+			board.updateResourceMarket(players);
+			if(step != 3 && board.removeHighestAndReplace(players) == 3)
+				step3 = true;
+			else if(step == 3) {
+				step3 = false;
+				board.removeLowestAndReplace(players);
+			}
+				
+		}
+		if(step3)
+			step3();
+		setTurn(0);
 	}
 	
 	public void endGame() {
