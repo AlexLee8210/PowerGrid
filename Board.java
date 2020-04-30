@@ -1,10 +1,11 @@
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -16,10 +17,15 @@ public class Board {
 	private int step;
 	private TreeMap<Integer, Integer> paymentTable;
 
-	public Board() throws IOException
-	{
+	public Board() {
 		deck = new ArrayList<PowerPlant>();
-		readPlantFile();
+		paymentTable = new TreeMap<Integer, Integer>();
+		try {
+			readPaymentFile();
+			readPlantFile();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 		Collections.sort(deck);
 		marketPlants = new ArrayList<PowerPlant>();//should have 8 plants
 		for(int i = 7; i > 0; i--)
@@ -40,24 +46,27 @@ public class Board {
 		graph = new Graph();
 		//havent seen the graph class yet so will edit later
 		step = 1;
-		paymentTable = new TreeMap<Integer, Integer>();
-		readPaymentFile();
+		
 	}
 	public void readPlantFile() throws IOException
 	{
-		Scanner sc = new Scanner(new File("PowerPlant.txt"));
-		while(sc.hasNextLine())
+		InputStream is = getClass().getResourceAsStream("PowerPlant.txt");
+		BufferedReader br = new BufferedReader(new InputStreamReader(is));
+		String line = "";
+		while((line = br.readLine()) != null)
 		{
-			String[] arr = sc.nextLine().split(" ");
+			String[] arr = line.split(" ");
 			deck.add(new PowerPlant(Integer.parseInt(arr[0]), Integer.parseInt(arr[1]), Integer.parseInt(arr[2]), arr[3]));
 		}
 	}
 	public void readPaymentFile() throws IOException
 	{
-		Scanner sc = new Scanner(new File("Payment.txt"));
-		while(sc.hasNextLine())
+		InputStream is = getClass().getResourceAsStream("Payment.txt");
+		BufferedReader br = new BufferedReader(new InputStreamReader(is));
+		String line = "";
+		while((line = br.readLine()) != null)
 		{
-			String[] arr = sc.nextLine().split(" ");
+			String[] arr = line.split(" ");
 			paymentTable.put(Integer.parseInt(arr[0]), Integer.parseInt(arr[1]));
 		}
 	}
@@ -142,13 +151,12 @@ public class Board {
 			toAdd = remain.get(type);
 		resourceMarket.put(type, resourceMarket.get(type) + toAdd);
 	}
+	@SuppressWarnings("unchecked")
 	public ArrayList<Player> determineOrder(ArrayList<Player> players)
 	{
 		Collections.sort(players);
-		ArrayList<Player> temp = new ArrayList<Player>();
-		for(int i = players.size() - 1; i > 0; i--)
-			temp.add(players.get(i));
-		return temp;
+		Collections.reverse(players);
+		return players;
 	}
 	public int moneyBuy(PowerPlant p, Player play)
 	{

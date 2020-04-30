@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Player implements Comparable<Player> {
+public class Player implements Comparable {
 	
 	private String color;
 	private int elektros;
@@ -73,15 +73,16 @@ public class Player implements Comparable<Player> {
 		return plants.get(plants.size()-1);
 	}
 	
-	public int compareTo(Player p) 
+	public int compareTo(Object o) 
 	{
+		Player p = (Player) o;
 		if(getCities() == null || p.getCities() == null)
 		{
 			if(getCities() != null)
 				return 1;
 			else if(p.getCities() != null)
 				return -1;
-			else if(p.getCities() == null)
+			else
 				return getLargestPlant().compareTo(p.getLargestPlant());
 		}
 		if(getCities().size() < p.getCities().size())

@@ -1,5 +1,4 @@
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,31 +10,37 @@ public class GameState {
 
 	private Board board;
 	private JFrame frame;
-	private PowerGridPanel panel;
+	private PowerGridPanel pgPanel;
+	private StartPanel startPanel;
 	private int phase, turn, step;
 	private ArrayList<Player> players;
 
 	public GameState() {
-
+		phase = 1;
 		players = new ArrayList<Player>();
 		for(int i = 0; i < 4; i++)
 			players.add(new Player());
 		turn = 0;
 		step = 1;
 		frame = new JFrame("Power Grid");
-		panel = new PowerGridPanel();
-		frame.setSize(1280, 700);
+		pgPanel = new PowerGridPanel();
+		startPanel = new StartPanel(1280, 720, frame, pgPanel);
+		frame.setSize(1305, 745);
 		BufferedImage img = null;
 		try {
-			img = ImageIO.read(new File("factory.png"));
+			img = ImageIO.read(getClass().getResourceAsStream("images/ui/factory.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		frame.setIconImage(img);
-		frame.add(panel);
+		frame.add(startPanel);
 		frame.setVisible(true);
 	}
-
+	
+	public void run() {
+		
+	}
+	
 	public void nextPhase() {
 		phase = (phase + 1) % 4;
 	}

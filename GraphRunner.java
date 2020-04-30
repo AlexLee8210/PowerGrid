@@ -4,14 +4,14 @@ import static java.lang.System.out;
 
 public class GraphRunner {
 	public static void main(String[] args) throws IOException {
-		Scanner input = new Scanner(new File("test.txt"));
+		Scanner input = new Scanner(new File("src/cities.txt"));
 		Graph graph = new Graph();
 		while(input.hasNext()) {
-			String region = input.next();
+			input.nextLine();
+			String region = input.nextLine();
 			for(int i = 0; i < 7; i++) {
-				String c1 = input.next();
-				int num = input.nextInt();
-				input.nextLine();
+				String c1 = input.nextLine();
+				int num = Integer.parseInt(input.nextLine());
 				for(int j = 0; j < num; j++) {
 					
 					StringTokenizer st = new StringTokenizer(input.nextLine(), ";");
@@ -23,10 +23,10 @@ public class GraphRunner {
 			}
 		}
 		HashMap<City, ArrayList<Object>> result = graph.getShortestPathAll(graph.get("Seattle"));
-		ArrayList<City> result2 = graph.getShortestPath(graph.get("Seattle"), graph.get("Chicago"));
+		ArrayList<City> result2 = graph.getShortestPath(graph.get("Seattle"), graph.get("Houston"));
 		out.println(result);
 		out.println(result2);
-		out.println(graph.getShortestPathCost(graph.get("Seattle"), graph.get("Chicago")));
+		out.println(graph.getShortestPathCost(graph.get("Seattle"), graph.get("Houston")));
 //		HashMap<String, City> cities = graph.cities;
 //		Iterator<City> iter = cities.get("Seattle").getNeighbors().keySet().iterator();
 //		out.println(cities.get("Seattle").getNeighbors());
