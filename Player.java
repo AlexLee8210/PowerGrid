@@ -7,11 +7,16 @@ public class Player implements Comparable {
 	private int elektros;
 	private ArrayList<PowerPlant> plants;
 	private ArrayList<City> citiesOwned;
+	private int number;
 	
-	public Player() {
+	public Player(int num) {
 		elektros = 50;
 		plants = new ArrayList<>();
 		citiesOwned = new ArrayList<City>();
+		number = num;
+	}
+	public int getNumber() {
+		return number;
 	}
 	public void setColor(String c) {
 		color = c;
