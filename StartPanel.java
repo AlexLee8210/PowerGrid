@@ -37,24 +37,24 @@ public class StartPanel extends JPanel implements MouseListener {
 	private JButton start, begin, startGame;
 	private boolean startMenu, playerMenu, mapSelect;
 	private JButton[] PButtons;
-	private Player[] players;
+	private ArrayList<Player> players;
 	private NavigableMap<String, BufferedImage> houses;
 	private LinkedHashMap<JButton, Boolean> regionBMap;
 	private JButton[] regionB;
 	
-	public StartPanel(int screenw, int screenh, JFrame f, PowerGridPanel pgPanel) {
+	public StartPanel(int screenw, int screenh, JFrame f, PowerGridPanel pgPanel, GameState gs) {
 		regionBMap = new LinkedHashMap<>();
-		regionB  = new JButton[6];
+		regionB = new JButton[6];
 		mapSelect = false;
 		houses = new TreeMap<>();
-		players = new Player[4];
-		
-		for(int i = 0; i < 4; i++)
-			players[i] = new Player();
-		players[0].setColor("red");
-		players[1].setColor("green");
-		players[2].setColor("blue");
-		players[3].setColor("black");
+		players = new ArrayList<>();
+		for(int i = 0; i < 4; i++) {
+			players.add(new Player(i+1));
+		}
+		players.get(0).setColor("red");
+		players.get(1).setColor("green");
+		players.get(2).setColor("blue");
+		players.get(3).setColor("black");
 		try {
 			Font f1 = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("fonts/FetteEngschrift.TTF")).deriveFont(12f);
 		    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -191,13 +191,13 @@ public class StartPanel extends JPanel implements MouseListener {
 		        	/// check if >1 select same color
 		        	ArrayList<String> temp = new ArrayList<>();
 		        	for(int i = 0; i < 4; i++)
-		        		temp.add(players[i].getColor());
+		        		temp.add(players.get(i).getColor());
 		        	
 		        	for(int i = 0; i < 4; i++) {
 		        		ArrayList<String> temp2 = new ArrayList<>(temp);
-		        		temp2.remove(players[i].getColor());
+		        		temp2.remove(players.get(i).getColor());
 		        		for(int j = 0; j < 4; j++)
-		        			if(j!=i && temp2.contains(players[i].getColor())) {
+		        			if(j!=i && temp2.contains(players.get(i).getColor())) {
 		        				Font cf2 = new Font("f1", Font.PLAIN, 12);
 		        				begin.setFont(cf2);
 		        				begin.setText("<html><center>Players must<br/>have different colors!</center></html>");
@@ -208,7 +208,7 @@ public class StartPanel extends JPanel implements MouseListener {
 		        	playerMenu = false;
 		        	mapSelect = true;
 		        	///
-		        	
+		        	gs.setPlayers(players);
 		        	try {
 		        		for(int i = 0; i < 4; i++)
 		        			remove(PButtons[i]);
@@ -282,7 +282,7 @@ public class StartPanel extends JPanel implements MouseListener {
 					
 				add(PButtons[i]);
 				add(begin);
-				g.drawImage(houses.get(players[i].getColor()), sw/2+sw/4, sh/2-145+100*i, 50, 50, null);
+				g.drawImage(houses.get(players.get(i).getColor()), sw/2+sw/4, sh/2-145+100*i, 50, 50, null);
 			}
 		}
 		else if(mapSelect) {
@@ -326,12 +326,12 @@ public class StartPanel extends JPanel implements MouseListener {
 					
 			        if(m.isPressed()) {
 			        	for(String c: houses.keySet()) {
-			        		if(c.equals(players[num].getColor())) {
+			        		if(c.equals(players.get(num).getColor())) {
 			        			try {
 			        				Entry<String, BufferedImage> next = houses.higherEntry(c); // next
-			        				players[num].setColor(next.getKey());
+			        				players.get(num).setColor(next.getKey());
 			        			} catch(Exception e1) {
-			        				players[num].setColor("black");
+			        				players.get(num).setColor("black");
 			        			}
 			        			break;
 			        		}

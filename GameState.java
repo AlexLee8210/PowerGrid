@@ -17,14 +17,14 @@ public class GameState {
 
 	public GameState() {
 		phase = 1;
-		players = new ArrayList<Player>();
+		players = new ArrayList<>();
 		for(int i = 0; i < 4; i++)
-			players.add(new Player());
+			players.add(new Player(i+1));
 		turn = 0;
 		step = 1;
 		frame = new JFrame("Power Grid");
-		pgPanel = new PowerGridPanel();
-		startPanel = new StartPanel(1280, 720, frame, pgPanel);
+		pgPanel = new PowerGridPanel(1280, 720, this);
+		startPanel = new StartPanel(1280, 720, frame, pgPanel, this);
 		frame.setSize(1305, 745);
 		BufferedImage img = null;
 		try {
@@ -36,7 +36,6 @@ public class GameState {
 		frame.add(startPanel);
 		frame.setVisible(true);
 	}
-	
 	public void run() {
 		
 	}
@@ -68,7 +67,9 @@ public class GameState {
 	{
 		this.players = players;
 	}
-	
+	public ArrayList<Player> getPlayers() {
+		return players;
+	}
 	public void auction() {//not sure how to handle exception for first round: players HAVE to choose power plant, and player order redetermined after choosing
 		ArrayList<Integer> bought = new ArrayList<Integer>();
 		for(int i = 0; i < 4; i++)
