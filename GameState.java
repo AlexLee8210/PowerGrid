@@ -50,7 +50,7 @@ public class GameState {
 		}
 		
 	}
-	public void run() {
+	public void runBidding() {
 		
 	}
 	public void passBid() {

@@ -76,7 +76,6 @@ public class PowerGridPanel extends JPanel {
 			}
 			addAuctionButtons();
 			
-			
 		}
 		else if(phase == 3) {
 			
@@ -102,7 +101,7 @@ public class PowerGridPanel extends JPanel {
 		baka.setHorizontalAlignment(baka.CENTER);
 		
 		currentBid = new JLabel("Current Bid: " + bid);
-		currentBid.setFont(f1.deriveFont(24f));
+		currentBid.setFont(f1.deriveFont(30f));
 		currentBid.setForeground(Color.WHITE);
 		currentBid.setHorizontalAlignment(baka.CENTER);
 		
@@ -119,12 +118,21 @@ public class PowerGridPanel extends JPanel {
 				if (m.isPressed()) {
 					String text = offer.getText();
 					try {
+						int tempBid = Integer.parseInt(""+bid);
 						bid = Integer.parseInt(text);
-						currentBid.setText("Current Bid: " + bid);
-						gs.nextTurn();
+						if(bid > tempBid) {
+							if(bid >= auctionPlant.getNum()) {
+								currentBid.setText("Current Bid: " + bid);
+								gs.nextTurn();
+							}
+							else
+								baka.setText("Bid must be greater than the power plant number!");
+						}
+						else
+							baka.setText("Bid must be greater than the current bid!");
 						repaint();
 					} catch(Exception e1) {
-						offer.setText("Bid must be an Integer");
+						baka.setText("Bid must be an Integer");
 					}
 				}
 			}
@@ -138,14 +146,14 @@ public class PowerGridPanel extends JPanel {
 				if (m.isPressed()) {
 					if(firstRound && gs.getCurrentPlayer().equals(gs.getFirstPlayer()) && bidround == 0) {
 						baka.setText("First Player Must Bid!");
-						repaint();
+						//repaint();
 					}
 					else {
 						gs.nextTurn();
-						offer.setText("Enter Bid");
+						baka.setText("Pick a Power Plant to bid for it!");
 						gs.passBid();
-						repaint();
 					}
+					repaint();
 				}
 			}
 		});
@@ -167,7 +175,7 @@ public class PowerGridPanel extends JPanel {
 						if(m.isPressed()) {
 							if(row == 1) {
 								baka.setText("Can't Bid For Second Row!");
-								repaint();
+								//repaint();
 							}
 							else {
 								baka.setText("Bidding for " + ppMarket.get(col+(row*4)));
@@ -187,7 +195,7 @@ public class PowerGridPanel extends JPanel {
 		offerB.setBounds(w/2-100, h/2+225, 98, 50);
 		offer.setBounds(w/2-100, h/2+170, 200, 50);
 		no.setBounds(w/2+2, h/2+225, 98, 50);
-		baka.setBounds(w/2-75, h/2+270, 150, 40);
+		baka.setBounds(w/2-100, h/2+270, 200, 40);
 		currentBid.setBounds(w/2-75, 70, 150, 40);
 		add(offer);
 		add(offerB);
