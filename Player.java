@@ -96,4 +96,11 @@ public class Player implements Comparable {
 			return 1;
 		return getLargestPlant().compareTo(p.getLargestPlant());
 	}
+	public boolean equals(Object o) {
+		Player p = (Player) o;
+		return number == p.getNumber();
+	}
+	public String toString() {
+		return "Player " + number;
+	}
 }

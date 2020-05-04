@@ -6,6 +6,8 @@ import java.util.Collections;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
+import static java.lang.System.out;
+
 public class GameState {
 
 	private Board board;
@@ -14,18 +16,21 @@ public class GameState {
 	private StartPanel startPanel;
 	private int phase, turn, step;
 	private ArrayList<Player> players;
+	private Player currentPlayer;
 
 	public GameState() {
 		phase = 1;
+		board = new Board();
 		players = new ArrayList<>();
 		for(int i = 0; i < 4; i++)
 			players.add(new Player(i+1));
 		turn = 0;
 		step = 1;
 		frame = new JFrame("Power Grid");
-		pgPanel = new PowerGridPanel(1280, 720, this);
-		startPanel = new StartPanel(1280, 720, frame, pgPanel, this);
-		frame.setSize(1305, 745);
+		pgPanel = new PowerGridPanel(1265, 685, this);
+		startPanel = new StartPanel(1265, 685, frame, pgPanel, this);
+		frame.setSize(1280, 720);
+		frame.setResizable(false);
 		BufferedImage img = null;
 		try {
 			img = ImageIO.read(getClass().getResourceAsStream("images/ui/factory.png"));
@@ -39,11 +44,15 @@ public class GameState {
 	public void run() {
 		
 	}
-	
+	public void randomizePlayers() {
+		Collections.shuffle(players);
+		//out.println(players);
+		currentPlayer = players.get(0);
+	}
 	public void nextPhase() {
 		phase = (phase + 1) % 4;
 	}
-
+	
 	public void nextTurn() {
 		turn = (turn+1) % 3;
 	}
@@ -58,9 +67,19 @@ public class GameState {
 		else
 			turn--;
 	}
-
+	public void setPhase(int p) {
+		phase = p;
+	}
+	public int getPhase() {
+		return phase;
+	}
 	public void determineOrder() {
 		setPlayers(board.determineOrder(players));
+		currentPlayer = players.get(0);
+	}
+	
+	public Player getCurrentPlayer() {
+		return currentPlayer;
 	}
 
 	public void setPlayers(ArrayList<Player> players)
@@ -69,6 +88,9 @@ public class GameState {
 	}
 	public ArrayList<Player> getPlayers() {
 		return players;
+	}
+	public ArrayList<PowerPlant> getMarketPlants() {
+		return board.getMarketPlants();
 	}
 	public void auction() {//not sure how to handle exception for first round: players HAVE to choose power plant, and player order redetermined after choosing
 		ArrayList<Integer> bought = new ArrayList<Integer>();

@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class PowerPlant implements Comparable<PowerPlant> {
+public class PowerPlant implements Comparable {
 	
 	private int num;
 	private int power;
@@ -107,15 +107,12 @@ public class PowerPlant implements Comparable<PowerPlant> {
 			mats -= consumedMats;
 	}
 	
-	public int compareTo(PowerPlant p) {
-		if(num > p.getNum())
-			return 1;
-		else if(num < p.getNum())
-			return -1;
-		return 0;
+	public int compareTo(Object o) {
+		PowerPlant p = (PowerPlant) o;
+		return num - p.getNum();
 	}
 	public String toString() // for testing
 	{
-		return getNum() + " " + getPower() + " " + consumedMats + " " + getType();
+		return "" + num/* getNum() + " " + getPower() + " " + consumedMats + " " + getType() */;
 	}
 }

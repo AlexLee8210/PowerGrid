@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
+import static java.lang.System.out;
 
 public class Board {
 	private ArrayList<PowerPlant> deck;
@@ -17,6 +18,7 @@ public class Board {
 	private int step;
 	private TreeMap<Integer, Integer> paymentTable;
 
+	@SuppressWarnings("unchecked")
 	public Board() {
 		deck = new ArrayList<PowerPlant>();
 		paymentTable = new TreeMap<Integer, Integer>();
@@ -28,7 +30,7 @@ public class Board {
 		}
 		Collections.sort(deck);
 		marketPlants = new ArrayList<PowerPlant>();//should have 8 plants
-		for(int i = 7; i > 0; i--)
+		for(int i = 7; i >= 0; i--)
 			marketPlants.add(deck.remove(i));
 		Collections.sort(marketPlants);
 		for(int i = deck.size()-1; i > 0; i--) {
@@ -46,7 +48,7 @@ public class Board {
 		graph = new Graph();
 		//havent seen the graph class yet so will edit later
 		step = 1;
-		
+		//out.println(marketPlants);
 	}
 	public void readPlantFile() throws IOException
 	{
@@ -155,7 +157,7 @@ public class Board {
 	public ArrayList<Player> determineOrder(ArrayList<Player> players)
 	{
 		Collections.sort(players);
-		Collections.reverse(players);
+		//Collections.reverse(players);
 		return players;
 	}
 	public int moneyBuy(PowerPlant p, Player play)

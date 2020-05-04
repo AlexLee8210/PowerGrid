@@ -1,30 +1,65 @@
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
+
+import static java.lang.System.out;
 
 public class PowerGridPanel extends JPanel {
 	
-	private int phase;
 	private int w, h;
 	private GameState gs;
+	private BufferedImage frame, emptyMap, darkMap, startScreen, downArrow;
+	private HashMap<String, BufferedImage> houses; //used for showing house image from string
+	private Font f1;
+	private boolean firstRound; 
+	private HashMap<Integer, BufferedImage> plants;
 	
 	public PowerGridPanel(int w, int h, GameState gs) {
-		phase = 0;
+		houses = new HashMap<>();
 		this.w = w;
 		this.h = h;
 		this.gs = gs;
+		plants = new HashMap<>();
+		
+		setBackground(Color.WHITE);
+		makeImages();
+		firstRound = true;
 	}
 	
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		if(phase == 0) {
-			gs.getPlayers();
-		}
-		else if(phase == 1) {
-			
+		int phase = gs.getPhase();
+		if(phase == 1) {
+			if(firstRound) {
+				gs.randomizePlayers();
+				firstRound = false;
+			}
+			else
+				gs.determineOrder();
+			gs.setPhase(2);
+			repaint();
 		}
 		else if(phase == 2) {
-			
+			fillScreen(g, darkMap);
+			g.drawImage(frame, 0, 0, w, h, null);
+			drawPlayers(g);
+			ArrayList<PowerPlant> marketPlants = gs.getMarketPlants();
+			for(int i = 0; i < 2; i++) {
+				for(int j = 0; j < 4; j++) {
+					int cp = marketPlants.get(j+(i*4)).getNum(); //currentPlant 
+					g.drawImage(plants.get(cp), 310+175*j, 125+200*i, 150, 150, null);
+				}
+			}
 		}
 		else if(phase == 3) {
 			
@@ -35,9 +70,63 @@ public class PowerGridPanel extends JPanel {
 		else if(phase == 5) {
 			
 		}
+		g.drawImage(frame, 0, 0, w, h, null);
 	}
 	
-	public void updatePhase(int p) {
-		phase = p;
+	private void fillScreen(Graphics g, BufferedImage b) {
+		g.drawImage(b, 38, 29, w-77, h-58, null);
+	}
+	
+	private void drawPlayers(Graphics g) {
+		Font font = f1.deriveFont(30f);
+		g.setColor(Color.WHITE);
+		g.setFont(font);
+		ArrayList<Player> players = gs.getPlayers();
+		g.setColor(Color.WHITE);
+		for(int i = 0; i < 4; i++) {
+			Player p = players.get(i);
+			g.drawImage(houses.get(p.getColor()), 120 + 45*(i), h-177, 35, 35, null);
+			g.drawString(Integer.toString(p.getNumber()), 130 + 45*(i), h-150);
+			//out.println(gs.getCurrentPlayer());
+			if(p.equals(gs.getCurrentPlayer()))
+				g.drawImage(downArrow, 125 + 45*(i), h-195, 24, 15, null);
+		}
+		g.drawString("Order: ", 50, h-150);
+	}
+	
+	//makes the images so no clutter in 
+	private void makeImages() {
+		try {
+			frame = ImageIO.read(getClass().getResourceAsStream("images/ui/boardFrame.png"));
+			///make the font
+			f1 = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("fonts/FetteEngschrift.TTF")).deriveFont(12f);
+			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		    ge.registerFont(f1);
+		    ///
+			houses.put("black", ImageIO.read(getClass().getResourceAsStream("images/houses/black.png")));
+			houses.put("blue", ImageIO.read(getClass().getResourceAsStream("images/houses/blue.png")));
+			houses.put("green", ImageIO.read(getClass().getResourceAsStream("images/houses/green.png")));
+			houses.put("purple", ImageIO.read(getClass().getResourceAsStream("images/houses/purple.png")));
+			houses.put("red", ImageIO.read(getClass().getResourceAsStream("images/houses/red.png")));
+			houses.put("yellow", ImageIO.read(getClass().getResourceAsStream("images/houses/yellow.png")));
+			
+			darkMap = ImageIO.read(getClass().getResourceAsStream("images/maps/map3.jpg"));
+			emptyMap = ImageIO.read(getClass().getResourceAsStream("images/maps/USA_MAP_3.jpg"));
+			startScreen = ImageIO.read(getClass().getResourceAsStream("images/ui/startScreen.jpg"));
+			downArrow = ImageIO.read(getClass().getResourceAsStream("images/ui/downArrow.png"));
+			
+			for(int i = 3; i < 40; i++) 
+				plants.put(i, ImageIO.read(getClass().getResourceAsStream("images/powerplants/" + i + ".png")));
+			
+			for(int i = 42; i < 50; i+=2) {
+				if(i!=48)
+					plants.put(i, ImageIO.read(getClass().getResourceAsStream("images/powerplants/" + i + ".png")));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (FontFormatException e) {
+			e.printStackTrace();
+		}
+		///
 	}
 }
