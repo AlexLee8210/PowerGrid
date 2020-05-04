@@ -55,6 +55,7 @@ public class GameState {
 	
 	public void nextTurn() {
 		turn = (turn+1) % 3;
+		currentPlayer = players.get(turn);
 	}
 	
 	public void setTurn(int turn) {
