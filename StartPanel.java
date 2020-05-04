@@ -149,7 +149,8 @@ public class StartPanel extends JPanel implements MouseListener {
 					}
 					if (x == 4) {
 						if ((regionBMap.get(regionB[4]) == false && false == regionBMap.get(regionB[5]))
-								|| (regionBMap.get(regionB[2]) == false && false == regionBMap.get(regionB[5]))) {
+								|| (regionBMap.get(regionB[2]) == false && false == regionBMap.get(regionB[5]))
+								|| (regionBMap.get(regionB[3]) == false && false == regionBMap.get(regionB[4]))) {
 							Font customF2 = f1.deriveFont(20f);
 							startGame.setFont(customF2);
 							startGame.setText("<html>Regions must<br/>be connected!</html>");

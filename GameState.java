@@ -2,6 +2,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -17,8 +18,11 @@ public class GameState {
 	private int phase, turn, step;
 	private ArrayList<Player> players;
 	private Player currentPlayer;
-
+	private HashMap <Player, Boolean> canBid;
+	
 	public GameState() {
+		canBid = new HashMap<>();
+
 		phase = 1;
 		board = new Board();
 		players = new ArrayList<>();
@@ -40,9 +44,20 @@ public class GameState {
 		frame.setIconImage(img);
 		frame.add(startPanel);
 		frame.setVisible(true);
+		
+		for(Player p: players) {
+			canBid.put(p, true);
+		}
+		
 	}
 	public void run() {
 		
+	}
+	public void passBid() {
+		canBid.put(currentPlayer, false);
+	}
+	public Player getFirstPlayer() {
+		return players.get(0);
 	}
 	public void randomizePlayers() {
 		Collections.shuffle(players);
@@ -54,8 +69,9 @@ public class GameState {
 	}
 	
 	public void nextTurn() {
-		turn = (turn+1) % 3;
+		turn = (turn+1) % 4;
 		currentPlayer = players.get(turn);
+		out.println(turn);
 	}
 	
 	public void setTurn(int turn) {
