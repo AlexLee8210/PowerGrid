@@ -119,58 +119,59 @@ public class GameState {
 		int plantsBought = 0, powerPlant = -1, currentBid = 0;
 		while(bought != null)
 		{
-			for(int i = 0; i < 4; i++)
+			
+			
+			setTurn(bought.get(0)); //TODO is leading player 0 or 3 in ArrayList<Player> players???
+			//setTurn(bought.get(bought.size()-1);
+			
+			
+			int maxBid = players.get(turn).getElektros();
+			//players.get(turn), board.getMarketPlants(), and maxBid should be used by Graphics 
+			//so that player can choose the power plant to buy and the cost
+			didPass = false; //panel should return if player passed or not
+			if(!didPass)
 			{
-				int maxBid = players.get(turn).getElektros();
-				//players.get(turn), board.getMarketPlants(), and maxBid should be used by Graphics 
-				//so that player can choose the power plant to buy and the cost
-				didPass = false; //panel should return if player passed or not
-				if(!didPass)
+				powerPlant = -1; //panel should return the powerplant the player chose (should be a number from 0-3)
+				//0 being the leftmost powerplant, 3 is rightmost
+				currentBid = 0; //panel should return the bid on the powerplant chosen (use maxBid to cap the bid)
+			}
+			else if(didPass)
+			{
+				bought.remove(turn);
+			}
+			else if(bought.size() == 1)
+			{
+				players.set(turn, board.buyPlant(players.get(turn), currentBid, powerPlant));
+				step3 = reOrgPlant();
+				plantsBought++;
+			}
+			else 
+			{
+				boolean isBought = false;
+				ArrayList<Integer> temp = bought;
+				while(!isBought)
 				{
-					powerPlant = -1; //panel should return the powerplant the player chose (should be a number from 0-3)
-					//0 being the leftmost powerplant, 3 is rightmost
-					currentBid = 0; //panel should return the bid on the powerplant chosen (use maxBid to cap the bid)
-				}
-				else if(didPass)
-				{
-					bought.remove(turn);
-				}
-				else if(bought.size() == 1)
-				{
-					players.set(turn, board.buyPlant(players.get(turn), currentBid, powerPlant));
-					step3 = reOrgPlant();
-					plantsBought++;
-				}
-				else 
-				{
-					boolean isBought = false;
-					ArrayList<Integer> temp = bought;
-					while(!isBought)
+					nextTurn();
+					maxBid = players.get(turn).getElektros();
+					if(maxBid > currentBid)
 					{
-						nextTurn();
-						maxBid = players.get(turn).getElektros();
-						if(maxBid > currentBid)
+						didPass = false; //panel should return if player passed or not
+						if(didPass)
 						{
-							didPass = false; //panel should return if player passed or not
-							if(didPass)
-							{
-								temp.remove(turn);
-							}
-							else if(temp.size() == 1)
-							{
-								players.set(turn, board.buyPlant(players.get(turn), currentBid, powerPlant));
-								step3 = reOrgPlant();
-								plantsBought++;
-							}
-							else
-							{
-								currentBid = 0; //panel should return new bid (use currentBid and maxBid for range)
-							}
+							temp.remove(turn);
+						}
+						else if(temp.size() == 1)
+						{
+							players.set(turn, board.buyPlant(players.get(turn), currentBid, powerPlant));
+							step3 = reOrgPlant();
+							plantsBought++;
+						}
+						else
+						{
+							currentBid = 0; //panel should return new bid (use currentBid and maxBid for range)
 						}
 					}
 				}
-				setTurn(i);
-				nextTurn();
 			}
 		}
 		if(plantsBought == 0) {
@@ -189,7 +190,7 @@ public class GameState {
 			}
 			nextTurn();
 		}
-		if(step == 3) //NEW
+		if(step == 3) 
 			step3 = false;
 		else if(step3)
 		{
@@ -349,6 +350,7 @@ public class GameState {
 				if(step == 3) //NEW
 					step3 = false;
 			}
+			nextTurnReverse();
 		}
 		setTurn(0);
 		boolean step2 = false;
@@ -446,7 +448,7 @@ public class GameState {
 				step3 = false;
 				board.removeLowestAndReplace(players);
 			}
-				
+			nextTurn();	
 		}
 		if(step3)
 			step3();
