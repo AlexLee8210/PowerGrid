@@ -26,19 +26,23 @@ import static java.lang.System.out;
 
 public class PowerGridPanel extends JPanel {
 	
-	private int w, h, bid, bidRound;
+	private int w, h;
 	private GameState gs;
 	private BufferedImage frame, emptyMap, darkMap, startScreen, downArrow;
 	private HashMap<String, BufferedImage> houses; //used for showing house image from string
 	private Font f1;
-	private boolean firstRound, bidWin; 
+	private boolean firstRound; //used in auction
+	//auction stuff
 	private HashMap<Integer, BufferedImage> plants;
 	private PowerPlant auctionPlant;
 	private JTextField offer;
 	private JButton offerB, no;
 	private JLabel baka, currentBid;
 	private LinkedHashMap<JButton, PowerPlant> plantMarketButtons;
+	private boolean bidWin;
 	private Player bidWinner;
+	private int bid, bidRound;
+	//aucton stuff end
 	
 	public PowerGridPanel(int w, int h, GameState gs) {
 		houses = new HashMap<>();
@@ -147,13 +151,13 @@ public class PowerGridPanel extends JPanel {
 					String text = offer.getText();
 					if(auctionPlant != null) {
 						try {
-							int tempBid = Integer.parseInt(""+bid);
-							bid = Integer.parseInt(text);
-							if(bid > tempBid) {
-								if(bid >= auctionPlant.getNum()) {
-									if(bid > gs.getCurrentPlayer().getElektros())
+							int tempBid = Integer.parseInt(text);
+							if(tempBid > bid) {
+								if(tempBid >= auctionPlant.getNum()) {
+									if(tempBid > gs.getCurrentPlayer().getElektros())
 										baka.setText("You don't have enough Elektros!");
 									else {
+										bid = Integer.parseInt(text);
 										currentBid.setText("Current Bid: " + bid);
 										gs.nextTurn();
 										gs.checkBidWinner();
@@ -162,8 +166,11 @@ public class PowerGridPanel extends JPanel {
 								else
 									baka.setText("Bid must be greater than the power plant size!");
 							}
-							else
+							else {
 								baka.setText("Bid must be greater than the current bid!");
+								out.println(tempBid);
+								out.println(bid);
+							}
 							
 						} catch(Exception e1) {
 							baka.setText("Bid must be an Integer");
@@ -262,6 +269,13 @@ public class PowerGridPanel extends JPanel {
 	}
 	public PowerPlant getAuctionPlant() {
 		return auctionPlant;
+	}
+	public void removeAuctionStuff() {
+		remove(offerB);
+		remove(offer);
+		remove(no);
+		remove(baka);
+		remove(currentBid);
 	}
 	///auctioning end
 									

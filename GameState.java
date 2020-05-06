@@ -94,77 +94,6 @@ public class GameState {
 					currentPlayer = players.get(turn);	//currentPlayer becomes the next one
 					i++;
 				} //currentPLayer ends up as the starting current player just calculated in this else statement
-				
-//				checkBidWinner();
-				
-//				if(i == 4) { //no one can bid
-//					phase = 3; 
-//				}
-//				else if(i == 3/*currentPlayer.getNumber() == auctionStartPlayer.getNumber()*/) {
-//					PowerPlant pp = pgPanel.getAuctionPlant();
-//					pgPanel.setBidder(currentPlayer);
-//					board.removeMarketPlant(pgPanel.getAuctionPlant());
-//					currentPlayer.addPlant(pp);
-//					currentPlayer.addElektros(-pgPanel.getBid());
-//					alreadyBid.add(currentPlayer);
-//					if(alreadyBid.size() == 4) {
-//						phase++;
-//						for(int j = 3; j >=0; j--)
-//							alreadyBid.remove(j);
-//						for(Player p: players)
-//							canBid.put(p, true);
-//					}
-//					else {
-//						for(Player p: players) {
-//							if(!alreadyBid.contains(p))
-//								canBid.put(p, true);
-//							else
-//								canBid.put(p, false);
-//						}
-//					}
-//					bidRound++;
-//					auctionStartPlayer = null;
-//					nextTurn();
-//				}
-//				out.println(i);
-//			}
-				
-//			turn = (turn+1)%4;
-//			currentPlayer = players.get(turn);
-//			
-//			int count = 0;
-//			Player temp = null;
-//			for(Player p: players) {
-//				if(!canBid.get(p))
-//					count++;
-//				else
-//					temp = p;
-//			}
-//			if(count == 3) {
-//				PowerPlant pp = pgPanel.getAuctionPlant();
-//				pgPanel.setBidder(temp);
-//				board.removeMarketPlant(pgPanel.getAuctionPlant());
-//				temp.addPlant(pp);
-//				temp.addElektros(-pgPanel.getBid());
-//				alreadyBid.add(temp);
-//				if(alreadyBid.size() == 4) {
-//					phase++;
-//					for(int j = 3; j >=0; j--)
-//						alreadyBid.remove(j);
-//					for(Player p: players)
-//						canBid.put(p, true);
-//				}
-//				else {
-//					for(Player p: players) {
-//						if(!alreadyBid.contains(p))
-//							canBid.put(p, true);
-//						else
-//							canBid.put(p, false);
-//					}
-//				}
-//				nextTurn();
-//				if(bidRound == 4)
-//					phase=3;
 			}
 		}
 		else if(phase == 3) {
@@ -192,7 +121,8 @@ public class GameState {
 			currentPlayer.addElektros(-pgPanel.getBid());
 			alreadyBid.add(currentPlayer);
 			if(alreadyBid.size() == 4) { //auction ended
-				phase++;
+				nextPhase();
+				pgPanel.removeAuctionStuff();
 				for(int j = 3; j >=0; j--)
 					alreadyBid.remove(j);
 				for(Player p: players)
