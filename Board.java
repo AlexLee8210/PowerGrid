@@ -344,6 +344,12 @@ public class Board {
 		reOrgMarketPlants();
 		return toReturn;
 	}
+	
+	public void removeMarketPlant(PowerPlant p) {
+		marketPlants.remove(p);
+		marketPlants.add(deck.remove(0));
+		Collections.sort(marketPlants);
+	}
 	public void reOrgMarketPlants()
 	{
 		Collections.sort(marketPlants);

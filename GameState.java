@@ -16,18 +16,19 @@ public class GameState {
 	private PowerGridPanel pgPanel;
 	private StartPanel startPanel;
 	private int phase, turn, step;
-	private ArrayList<Player> players;
-	private Player currentPlayer;
-	private HashMap <Player, Boolean> canBid;
+	private ArrayList<Player> players, alreadyBid; //alreadyBid is al of players who have already bought a pp that round
+	private Player currentPlayer, auctionStartPlayer;
+	private HashMap<Player, Boolean> canBid;
+	
 	
 	public GameState() {
 		canBid = new HashMap<>();
-
 		phase = 1;
 		board = new Board();
 		players = new ArrayList<>();
 		for(int i = 0; i < 4; i++)
 			players.add(new Player(i+1));
+		alreadyBid = new ArrayList<>();
 		turn = 0;
 		step = 1;
 		frame = new JFrame("Power Grid");
@@ -45,16 +46,26 @@ public class GameState {
 		frame.add(startPanel);
 		frame.setVisible(true);
 		
-		for(Player p: players) {
+		for(Player p: players)
 			canBid.put(p, true);
-		}
-		
-	}
-	public void runBidding() {
 		
 	}
 	public void passBid() {
 		canBid.put(currentPlayer, false);
+	}
+	public Player getAuctionStartPlayer() {
+		if(auctionStartPlayer == null) {
+			int i = 0;
+			turn = 0;
+			currentPlayer = players.get(0);
+			while(!canBid.get(currentPlayer) && i < 3) { //while the currentPlayer cant bid
+				turn = (turn+1)%4;
+				currentPlayer = new Player(players.get(turn).getNumber());	//currentPlayer becomes the next one
+				i++;
+			}
+			auctionStartPlayer = new Player(currentPlayer.getNumber());
+		}
+		return auctionStartPlayer;
 	}
 	public Player getFirstPlayer() {
 		return players.get(0);
@@ -63,21 +74,150 @@ public class GameState {
 		Collections.shuffle(players);
 		//out.println(players);
 		currentPlayer = players.get(0);
+		auctionStartPlayer = players.get(0);
 	}
 	public void nextPhase() {
-		phase = (phase + 1) % 4;
+		phase = (phase + 1) % 6;
 	}
 	
 	public void nextTurn() {
-		turn = (turn+1) % 4;
-		currentPlayer = players.get(turn);
-		out.println(turn);
+		if(phase == 2) {
+			if(auctionStartPlayer == null) {
+				getAuctionStartPlayer();
+			}
+			else {
+				int i = 0;
+				turn = (turn+1)%4;
+				currentPlayer = players.get(turn);
+				while(!canBid.get(currentPlayer) && i < 3) { //while the currentPlayer cant bid
+					turn = (turn+1)%4;
+					currentPlayer = players.get(turn);	//currentPlayer becomes the next one
+					i++;
+				} //currentPLayer ends up as the starting current player just calculated in this else statement
+				
+//				checkBidWinner();
+				
+//				if(i == 4) { //no one can bid
+//					phase = 3; 
+//				}
+//				else if(i == 3/*currentPlayer.getNumber() == auctionStartPlayer.getNumber()*/) {
+//					PowerPlant pp = pgPanel.getAuctionPlant();
+//					pgPanel.setBidder(currentPlayer);
+//					board.removeMarketPlant(pgPanel.getAuctionPlant());
+//					currentPlayer.addPlant(pp);
+//					currentPlayer.addElektros(-pgPanel.getBid());
+//					alreadyBid.add(currentPlayer);
+//					if(alreadyBid.size() == 4) {
+//						phase++;
+//						for(int j = 3; j >=0; j--)
+//							alreadyBid.remove(j);
+//						for(Player p: players)
+//							canBid.put(p, true);
+//					}
+//					else {
+//						for(Player p: players) {
+//							if(!alreadyBid.contains(p))
+//								canBid.put(p, true);
+//							else
+//								canBid.put(p, false);
+//						}
+//					}
+//					bidRound++;
+//					auctionStartPlayer = null;
+//					nextTurn();
+//				}
+//				out.println(i);
+//			}
+				
+//			turn = (turn+1)%4;
+//			currentPlayer = players.get(turn);
+//			
+//			int count = 0;
+//			Player temp = null;
+//			for(Player p: players) {
+//				if(!canBid.get(p))
+//					count++;
+//				else
+//					temp = p;
+//			}
+//			if(count == 3) {
+//				PowerPlant pp = pgPanel.getAuctionPlant();
+//				pgPanel.setBidder(temp);
+//				board.removeMarketPlant(pgPanel.getAuctionPlant());
+//				temp.addPlant(pp);
+//				temp.addElektros(-pgPanel.getBid());
+//				alreadyBid.add(temp);
+//				if(alreadyBid.size() == 4) {
+//					phase++;
+//					for(int j = 3; j >=0; j--)
+//						alreadyBid.remove(j);
+//					for(Player p: players)
+//						canBid.put(p, true);
+//				}
+//				else {
+//					for(Player p: players) {
+//						if(!alreadyBid.contains(p))
+//							canBid.put(p, true);
+//						else
+//							canBid.put(p, false);
+//					}
+//				}
+//				nextTurn();
+//				if(bidRound == 4)
+//					phase=3;
+			}
+		}
+		else if(phase == 3) {
+			
+		}
+		else if(phase == 4) {
+			
+		}
+		else if(phase == 5) {
+			
+		}
+		
 	}
-	
+	public boolean checkBidWinner() {
+		int k = 0;
+		for(int i = 0; i < 4; i++) {
+			if(canBid.get(players.get(i)))
+				k++;
+		}
+		if(k == 1) {
+			PowerPlant pp = pgPanel.getAuctionPlant();
+			pgPanel.setBidder(currentPlayer);
+			board.removeMarketPlant(pgPanel.getAuctionPlant());
+			currentPlayer.addPlant(pp);
+			currentPlayer.addElektros(-pgPanel.getBid());
+			alreadyBid.add(currentPlayer);
+			if(alreadyBid.size() == 4) { //auction ended
+				phase++;
+				for(int j = 3; j >=0; j--)
+					alreadyBid.remove(j);
+				for(Player p: players)
+					canBid.put(p, true);
+			}
+			else {
+				for(Player p: players) {
+					if(!alreadyBid.contains(p))
+						canBid.put(p, true);
+					else
+						canBid.put(p, false);
+				}
+			}
+			auctionStartPlayer = null;
+			nextTurn();
+			return true;
+		}
+		return false;
+	}
 	public void setTurn(int turn) {
 		this.turn = turn;
 	}
-	
+	public HashMap<Player, Boolean> getCanBid() {
+		return canBid;
+	}
 	public void nextTurnReverse() {
 		if(turn - 1 < 0)
 			turn = 3;
@@ -121,7 +261,7 @@ public class GameState {
 		{
 			
 			
-			setTurn(bought.get(0)); //TODO is leading player 0 or 3 in ArrayList<Player> players???
+			setTurn(bought.get(0)); //TODO is leading player 0 or 3 in ArrayList<Player> players??? 0
 			//setTurn(bought.get(bought.size()-1);
 			
 			
