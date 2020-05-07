@@ -57,7 +57,6 @@ public class StartPanel extends JPanel implements MouseListener {
 		players.get(1).setColor("green");
 		players.get(2).setColor("blue");
 		players.get(3).setColor("black");
-		
 		BufferedImage startImage = null;
 		
 		try {

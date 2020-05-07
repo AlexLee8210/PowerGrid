@@ -28,7 +28,7 @@ public class PowerGridPanel extends JPanel {
 	
 	private int w, h;
 	private GameState gs;
-	private BufferedImage frame, emptyMap, darkMap, startScreen, downArrow;
+	private BufferedImage frame, emptyMap, darkMap, startScreen, downArrow, menuBg;
 	private HashMap<String, BufferedImage> houses; //used for showing house image from string
 	private Font f1;
 	private boolean firstRound; //used in auction
@@ -36,10 +36,10 @@ public class PowerGridPanel extends JPanel {
 	private HashMap<Integer, BufferedImage> plants;
 	private PowerPlant auctionPlant;
 	private JTextField offer;
-	private JButton offerB, no;
+	private JButton offerB, no, pp1, pp2, pp3;
 	private JLabel baka, currentBid;
 	private LinkedHashMap<JButton, PowerPlant> plantMarketButtons;
-	private boolean bidWin;
+	private boolean bidWin, bidwait, tooManyPP;
 	private Player bidWinner;
 	private int bid, bidRound;
 	//aucton stuff end
@@ -51,13 +51,14 @@ public class PowerGridPanel extends JPanel {
 		this.gs = gs;
 		plants = new HashMap<>();
 		plantMarketButtons = new LinkedHashMap<>();
-		
+		bidwait = false;
 		setBackground(Color.WHITE);
 		makeImages();
 		firstRound = true;
 		makeAuctionButtons();
 		auctionPlant = null;
 		bidRound = 0;
+		tooManyPP = false;
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -72,8 +73,95 @@ public class PowerGridPanel extends JPanel {
 			repaint();
 		}
 		else if(phase == 2) {
+			drawPhase2(g);
+		}
+		else if(phase == 3) {
+			
+		}
+		else if(phase == 4) {
+			
+		}
+		else if(phase == 5) {
+			
+			firstRound = false;
+		}
+		g.drawImage(frame, 0, 0, w, h, null);
+	}
+	///auctioning
+	private void drawPhase2(Graphics g) {
+		if(tooManyPP) {
+			fillScreen(g, darkMap);
+			g.setColor(Color.WHITE);
+			g.setFont(f1.deriveFont(30f));
+			ArrayList<Player> players = gs.getPlayers();
+			for(int i = 0; i < 4; i++) {
+				Player p = players.get(i);
+				g.drawImage(houses.get(p.getColor()), 120 + 45*(i), h-177, 35, 35, null);
+				g.drawString(Integer.toString(p.getNumber()), 130 + 45*(i), h-150);
+				//out.println(gs.getCurrentPlayer());
+				if(p.equals(bidWinner))
+					g.drawImage(downArrow, 125 + 45*(i), h-195, 24, 15, null);
+			}
+			g.drawString("Order: ", 50, h-150);
+			g.drawString("Elektros: " + gs.getCurrentPlayer().getElektros(), w-180, h-50);
+			g.drawString("Owned Power Plants: ", 50, 60);
+			ArrayList<PowerPlant> cppp = bidWinner.getPlants();
+			for(int i = 0; i < cppp.size(); i++) {
+				g.drawImage(plants.get(cppp.get(i).getNum()), 50, 80+i*110, 100, 100, null);
+			}
+			ArrayList<PowerPlant> marketPlants = gs.getMarketPlants();
+			for(int i = 0; i < 2; i++) {
+				for(int j = 0; j < 4; j++) {
+					int cp = marketPlants.get(j+(i*4)).getNum(); //currentPlant 
+					g.drawImage(plants.get(cp), 310+175*j, 125+200*i, 150, 150, null);
+					if(auctionPlant != null && auctionPlant.getNum() == cp)
+						g.drawImage(downArrow, 369+175*j, 100+200*i, 32, 20, null);
+				}
+			}
+			players = gs.getPlayers();
+			g.setColor(new Color(0f, 0f, 0f, .5f));
+			for(int i = 0; i < 4; i++)
+				if(!gs.getCanBid().get(players.get(i)))
+					g.fillRect(120 + 45*(i), h-177, 35, 36);
+			offerB.setBounds(w/2-100, h/2+225, 98, 50);
+			offer.setBounds(w/2-100, h/2+170, 200, 50);
+			no.setBounds(w/2+2, h/2+225, 98, 50);
+			baka.setBounds(w/2-120, h/2+270, 240, 40);
+			currentBid.setBounds(w/2-75, 70, 150, 40);
+			Iterator<JButton> iter = plantMarketButtons.keySet().iterator();
+			for(int i = 0; i < 2; i++) {
+				for(int j = 0; j < 4; j++) {
+					JButton b = iter.next();
+					b.setBounds(310+175*j, 125+200*i, 150, 150);
+				}
+			}
+			g.setColor(Color.WHITE);
+			g.setFont(f1.deriveFont(16f));
+			g.drawString("Pick a plant to remove", 50, 450);
+			add(pp1);
+			add(pp2);
+			add(pp3);
+			pp1.setBounds(50, 80, 100, 100);
+			pp2.setBounds(50, 190, 100, 100);
+			pp3.setBounds(50, 300, 100, 100);
+		}
+		else {
+			if(bidwait) {
+				try {
+					Thread.sleep(2500);
+				} catch (InterruptedException e) { }
+				bidwait = false;
+			}
+			g.setFont(f1.deriveFont(16f));
+			g.setColor(Color.WHITE);
+			
 			fillScreen(g, darkMap);
 			drawPlayers(g);
+			g.drawString("Owned Power Plants: ", 50, 60);
+			ArrayList<PowerPlant> cppp = gs.getCurrentPlayer().getPlants();
+			for(int i = 0; i < cppp.size(); i++) {
+				g.drawImage(plants.get(cppp.get(i).getNum()), 50, 80+i*110, 100, 100, null);
+			}
 			ArrayList<PowerPlant> marketPlants = gs.getMarketPlants();
 			for(int i = 0; i < 2; i++) {
 				for(int j = 0; j < 4; j++) {
@@ -104,28 +192,89 @@ public class PowerGridPanel extends JPanel {
 				bid = 0;
 				currentBid.setText("Current Bid: " + bid);
 				g.setFont(f1.deriveFont(30f));
-				g.drawString(bidWinner.toString() + " gets power plant" + auctionPlant.getNum(), w/2 - 100, h/2 + 50);
 				bidWin = false;
-				bidWinner = null;
 				bidRound = 0;
-				auctionPlant = null;
+				
+				g.setColor(Color.WHITE);
+				g.drawImage(menuBg, w/2-150, h/2-100, 300, 200, null);
+				g.setFont(f1.deriveFont(24f));
+				g.drawString(bidWinner.toString() + " gets power plant " + auctionPlant.getNum(), w/2 - 100, h/2);
+				out.println(bidWinner.getNumPlants());
+				if(bidWinner.getNumPlants() == 3) {
+					tooManyPP = true;
+				}
+				else
+					bidwait = true;
 			}
 		}
-		else if(phase == 3) {
-			
-		}
-		else if(phase == 4) {
-			
-		}
-		else if(phase == 5) {
-			
-			firstRound = false;
-		}
-		g.drawImage(frame, 0, 0, w, h, null);
 	}
-	///auctioning
 	private void makeAuctionButtons() {
 		ArrayList<PowerPlant> ppMarket = gs.getMarketPlants();
+		
+		pp1 = new JButton();
+		pp1.setFocusPainted(false);
+		pp1.setOpaque(false);
+		pp1.setContentAreaFilled(false);
+		//pp1.setBorderPainted(false);
+		pp1.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if (m.isPressed()) {
+					bidWinner.removePlant(0);
+					remove(pp1);
+					remove(pp2);
+					remove(pp3);
+					bidWinner.addPlant(auctionPlant);
+					bidWinner = null;
+					auctionPlant = null;
+					tooManyPP = false;
+					repaint();
+				}
+			}
+		});
+		pp2 = new JButton();
+		pp2.setFocusPainted(false);
+		pp2.setOpaque(false);
+		pp2.setContentAreaFilled(false);
+		//pp2.setBorderPainted(false);
+		pp2.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if (m.isPressed()) {
+					bidWinner.removePlant(1);
+					remove(pp1);
+					remove(pp2);
+					remove(pp3);
+					bidWinner.addPlant(auctionPlant);
+					bidWinner = null;
+					auctionPlant = null;
+					tooManyPP = false;
+					repaint();
+				}
+			}
+		});
+		
+		pp3 = new JButton();
+		pp3.setFocusPainted(false);
+		pp3.setOpaque(false);
+		pp3.setContentAreaFilled(false);
+		//pp3.setBorderPainted(false);
+		pp3.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if (m.isPressed()) {
+					bidWinner.removePlant(2);
+					remove(pp1);
+					remove(pp2);
+					remove(pp3);
+					bidWinner.addPlant(auctionPlant);
+					bidWinner = null;
+					auctionPlant = null;
+					tooManyPP = false;
+					repaint();
+				}
+			}
+		});
 		
 		baka = new JLabel("Pick a Power Plant to bid for it!");
 		baka.setFont(f1);
@@ -213,7 +362,7 @@ public class PowerGridPanel extends JPanel {
 				ppButton.setFocusPainted(false);
 				ppButton.setOpaque(false);
 				ppButton.setContentAreaFilled(false);
-				//ppButton.setBorderPainted(false);
+				ppButton.setBorderPainted(false);
 				plantMarketButtons.put(ppButton, ppMarket.get(j+(i*4)));
 				final int col = j, row = i;
 				ppButton.getModel().addChangeListener(new ChangeListener() {
@@ -320,7 +469,7 @@ public class PowerGridPanel extends JPanel {
 			emptyMap = ImageIO.read(getClass().getResourceAsStream("images/maps/USA_MAP_3.jpg"));
 			startScreen = ImageIO.read(getClass().getResourceAsStream("images/ui/startScreen.jpg"));
 			downArrow = ImageIO.read(getClass().getResourceAsStream("images/ui/downArrow.png"));
-			
+			menuBg = ImageIO.read(getClass().getResourceAsStream("images/ui/menuBg.png"));
 			for(int i = 3; i < 40; i++) 
 				plants.put(i, ImageIO.read(getClass().getResourceAsStream("images/powerplants/" + i + ".png")));
 			

@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.WindowConstants;
 
 import static java.lang.System.out;
 
@@ -45,7 +46,7 @@ public class GameState {
 		frame.setIconImage(img);
 		frame.add(startPanel);
 		frame.setVisible(true);
-		
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		for(Player p: players)
 			canBid.put(p, true);
 		
@@ -117,7 +118,7 @@ public class GameState {
 			PowerPlant pp = pgPanel.getAuctionPlant();
 			pgPanel.setBidder(currentPlayer);
 			board.removeMarketPlant(pgPanel.getAuctionPlant());
-			currentPlayer.addPlant(pp);
+			
 			currentPlayer.addElektros(-pgPanel.getBid());
 			alreadyBid.add(currentPlayer);
 			if(alreadyBid.size() == 4) { //auction ended
@@ -171,7 +172,7 @@ public class GameState {
 
 	public void setPlayers(ArrayList<Player> players)
 	{
-		this.players = players;
+		this.players = players;	
 	}
 	public ArrayList<Player> getPlayers() {
 		return players;
