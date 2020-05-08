@@ -126,7 +126,7 @@ public class PowerGridPanel extends JPanel {
 			offerB.setBounds(w/2-100, h/2+225, 98, 50);
 			offer.setBounds(w/2-100, h/2+170, 200, 50);
 			no.setBounds(w/2+2, h/2+225, 98, 50);
-			baka.setBounds(w/2-120, h/2+270, 240, 40);
+			baka.setBounds(w/2-150, h/2+270, 300, 40);
 			currentBid.setBounds(w/2-75, 70, 150, 40);
 			Iterator<JButton> iter = plantMarketButtons.keySet().iterator();
 			for(int i = 0; i < 2; i++) {
@@ -146,12 +146,6 @@ public class PowerGridPanel extends JPanel {
 			pp3.setBounds(50, 300, 100, 100);
 		}
 		else {
-			if(bidwait) {
-				try {
-					Thread.sleep(2500);
-				} catch (InterruptedException e) { }
-				bidwait = false;
-			}
 			g.setFont(f1.deriveFont(16f));
 			g.setColor(Color.WHITE);
 			
@@ -177,9 +171,11 @@ public class PowerGridPanel extends JPanel {
 				if(!gs.getCanBid().get(players.get(i)))
 					g.fillRect(120 + 45*(i), h-177, 35, 36);
 			offerB.setBounds(w/2-100, h/2+225, 98, 50);
+			g.drawImage(menuBg, w/2-100, h/2+225, 98, 50, null);
 			offer.setBounds(w/2-100, h/2+170, 200, 50);
 			no.setBounds(w/2+2, h/2+225, 98, 50);
-			baka.setBounds(w/2-120, h/2+270, 240, 40);
+			g.drawImage(menuBg, w/2+2, h/2+225, 98, 50, null);
+			baka.setBounds(w/2-150, h/2+270, 300, 40);
 			currentBid.setBounds(w/2-75, 70, 150, 40);
 			Iterator<JButton> iter = plantMarketButtons.keySet().iterator();
 			for(int i = 0; i < 2; i++) {
@@ -195,16 +191,20 @@ public class PowerGridPanel extends JPanel {
 				bidWin = false;
 				bidRound = 0;
 				
-				g.setColor(Color.WHITE);
-				g.drawImage(menuBg, w/2-150, h/2-100, 300, 200, null);
-				g.setFont(f1.deriveFont(24f));
-				g.drawString(bidWinner.toString() + " gets power plant " + auctionPlant.getNum(), w/2 - 100, h/2);
-				out.println(bidWinner.getNumPlants());
+//				g.setColor(Color.WHITE);
+//				g.drawImage(menuBg, w/2-150, h/2-100, 300, 200, null);
+//				g.setFont(f1.deriveFont(24f));
+//				g.drawString(bidWinner.toString() + " gets power plant " + auctionPlant.getNum(), w/2 - 100, h/2);
+//				out.println(bidWinner.getNumPlants());
 				if(bidWinner.getNumPlants() == 3) {
 					tooManyPP = true;
 				}
-				else
-					bidwait = true;
+				else {
+					bidWinner.addPlant(auctionPlant);
+					baka.setText(bidWinner.toString() + " gets Power Plant " + auctionPlant.getNum());
+					auctionPlant = null;
+					bidWinner = null;
+				}
 			}
 		}
 	}
@@ -277,7 +277,7 @@ public class PowerGridPanel extends JPanel {
 		});
 		
 		baka = new JLabel("Pick a Power Plant to bid for it!");
-		baka.setFont(f1);
+		baka.setFont(f1.deriveFont(20f));
 		baka.setForeground(Color.WHITE);
 		baka.setHorizontalAlignment(baka.CENTER);
 		
@@ -292,7 +292,11 @@ public class PowerGridPanel extends JPanel {
 		
 		offerB = new JButton("Bid");
 		offerB.setFont(f1);
-		
+		offerB.setFocusPainted(false);
+		offerB.setOpaque(false);
+		offerB.setContentAreaFilled(false);
+		offerB.setBorderPainted(false);
+		offerB.setForeground(Color.WHITE);
 		offerB.getModel().addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				ButtonModel m = (ButtonModel) e.getSource();
@@ -333,8 +337,12 @@ public class PowerGridPanel extends JPanel {
 			}
 		});
 		no = new JButton("Pass");
+		no.setForeground(Color.WHITE);
 		no.setFont(f1);
-		
+		no.setFocusPainted(false);
+		no.setOpaque(false);
+		no.setContentAreaFilled(false);
+		no.setBorderPainted(false);
 		no.getModel().addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				ButtonModel m = (ButtonModel) e.getSource();
@@ -392,7 +400,7 @@ public class PowerGridPanel extends JPanel {
 		offerB.setBounds(w/2-100, h/2+225, 98, 50);
 		offer.setBounds(w/2-100, h/2+170, 200, 50);
 		no.setBounds(w/2+2, h/2+225, 98, 50);
-		baka.setBounds(w/2-120, h/2+270, 240, 40);
+		baka.setBounds(w/2-150, h/2+270, 300, 40);
 		currentBid.setBounds(w/2-75, 70, 150, 40);
 		add(offer);
 		add(offerB);
