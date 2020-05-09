@@ -3,6 +3,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
@@ -183,6 +185,29 @@ public class GameState {
 	}
 	public TreeMap<String, Integer> getResourceMarket() {
 		return board.getResourceMarket();
+	}
+	public void buyResources(PowerPlant p, int amt) //cuz if it isnt a hybrid, only one material possible
+	{
+		board.buyResources(getCurrentPlayer(), amt, p);
+	}
+	public void buyResourcesHybrid(PowerPlant p, int coal, int oil)
+	{
+		board.buyResourcesHybrid(getCurrentPlayer(), coal, oil, p);
+	}
+	public int NumResourcesCanBuy(PowerPlant p)
+	{
+		int maxBuy = p.materialsTillFull();
+		if(p.getType().equals("hybrid") && (board.getResourceMarket().get("coal") + board.getResourceMarket().get("oil")) < maxBuy)
+			maxBuy = board.getResourceMarket().get("coal") + board.getResourceMarket().get("oil");
+		else if(board.getResourceMarket().get(p.getType()) < maxBuy)
+			maxBuy = board.getResourceMarket().get(p.getType());
+		if(!p.getType().equals("hybrid") && board.moneyBuy(p, getCurrentPlayer()) < maxBuy)
+			maxBuy = board.moneyBuy(p, players.get(turn));
+		return maxBuy; 
+		/*
+		 * NOTE: I did not calculate if the player would have enough money for hybrid
+		 * because for ex, the number of oil able to be bought depends on the number of coal bought
+		 */
 	}
 	public void auction() {//not sure how to handle exception for first round: players HAVE to choose power plant, and player order redetermined after choosing
 		ArrayList<Integer> bought = new ArrayList<Integer>();
