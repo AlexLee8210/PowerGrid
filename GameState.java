@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -179,6 +180,9 @@ public class GameState {
 	}
 	public ArrayList<PowerPlant> getMarketPlants() {
 		return board.getMarketPlants();
+	}
+	public TreeMap<String, Integer> getResourceMarket() {
+		return board.getResourceMarket();
 	}
 	public void auction() {//not sure how to handle exception for first round: players HAVE to choose power plant, and player order redetermined after choosing
 		ArrayList<Integer> bought = new ArrayList<Integer>();
@@ -456,7 +460,7 @@ public class GameState {
 		}	
 		setTurn(0);
 	}
-
+	
 	public void buyResources() {
 		setTurn(3);
 		for(int i = 0; i < 4; i++)

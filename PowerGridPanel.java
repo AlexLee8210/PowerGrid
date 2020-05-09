@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
@@ -29,7 +30,7 @@ public class PowerGridPanel extends JPanel {
 	private int w, h;
 	private GameState gs;
 	private BufferedImage frame, emptyMap, darkMap, startScreen, downArrow, menuBg;
-	private HashMap<String, BufferedImage> houses; //used for showing house image from string
+	private HashMap<String, BufferedImage> houses, resources; //used for showing image from string
 	private Font f1;
 	private boolean firstRound; //used in auction
 	//auction stuff
@@ -50,6 +51,7 @@ public class PowerGridPanel extends JPanel {
 		this.h = h;
 		this.gs = gs;
 		plants = new HashMap<>();
+		resources = new HashMap<>();
 		plantMarketButtons = new LinkedHashMap<>();
 		bidwait = false;
 		setBackground(Color.WHITE);
@@ -102,6 +104,7 @@ public class PowerGridPanel extends JPanel {
 				if(p.equals(bidWinner))
 					g.drawImage(downArrow, 125 + 45*(i), h-195, 24, 15, null);
 			}
+			drawResourceMarket(g);
 			g.drawString("Order: ", 50, h-150);
 			g.drawString("Elektros: " + gs.getCurrentPlayer().getElektros(), w-180, h-50);
 			g.drawString("Owned Power Plants: ", 50, 60);
@@ -151,6 +154,7 @@ public class PowerGridPanel extends JPanel {
 			
 			fillScreen(g, darkMap);
 			drawPlayers(g);
+			drawResourceMarket(g);
 			g.drawString("Owned Power Plants: ", 50, 60);
 			ArrayList<PowerPlant> cppp = gs.getCurrentPlayer().getPlants();
 			for(int i = 0; i < cppp.size(); i++) {
@@ -312,6 +316,7 @@ public class PowerGridPanel extends JPanel {
 									else {
 										bid = Integer.parseInt(text);
 										currentBid.setText("Current Bid: " + bid);
+										baka.setText(gs.getCurrentPlayer() + " bids " + text + " elektros");
 										gs.nextTurn();
 										gs.checkBidWinner();
 									}
@@ -435,7 +440,11 @@ public class PowerGridPanel extends JPanel {
 		remove(currentBid);
 	}
 	///auctioning end
-									
+	///resource buying start
+	private void drawPhase3(Graphics g) {
+		
+	}
+	///resource buying end
 	private void fillScreen(Graphics g, BufferedImage b) {
 		g.drawImage(b, 38, 29, w-77, h-58, null);
 	}
@@ -456,6 +465,33 @@ public class PowerGridPanel extends JPanel {
 		g.drawString("Order: ", 50, h-150);
 		g.drawString("Elektros: " + gs.getCurrentPlayer().getElektros(), w-180, h-50);
 	}
+	private void drawResourceMarket(Graphics g) {
+		Font font = f1.deriveFont(30f);
+		g.setColor(Color.WHITE);
+		g.setFont(font);
+		TreeMap<String, Integer> resourceMarket = gs.getResourceMarket();
+		g.drawString("Resource Market:", 50, h-100);
+		int i = 0;
+		g.setFont(font.deriveFont(12f));
+		
+		for(String k: resourceMarket.keySet()) {
+			if(k.equals("oil")) {
+				g.drawImage(resources.get(k), 50 + 45*i, h-90, 35, 35, null);
+				g.drawString(k + ": " + resourceMarket.get(k), 51 + 48*i, h-40);
+				i++;
+			}
+			else if(k.equals("coal")) {
+				g.drawImage(resources.get(k), 50 + 45*i, h-90, 35, 35, null);
+				g.drawString(k + ": " + resourceMarket.get(k), 53, h-40);
+				i++;
+			}
+			else {
+				g.drawImage(resources.get(k), 50 + 45*i, h-90, 35, 35, null);
+				g.drawString(k + ": " + resourceMarket.get(k), 50 + 45*i, h-40);
+				i++;
+			}
+		}
+	}
 	
 	//makes the images so no clutter in also font
 	private void makeImages() {
@@ -473,6 +509,11 @@ public class PowerGridPanel extends JPanel {
 			houses.put("red", ImageIO.read(getClass().getResourceAsStream("images/houses/red.png")));
 			houses.put("yellow", ImageIO.read(getClass().getResourceAsStream("images/houses/yellow.png")));
 			
+			resources.put("coal", ImageIO.read(getClass().getResourceAsStream("images/resources/coal.png")));
+			resources.put("garbage", ImageIO.read(getClass().getResourceAsStream("images/resources/garbage.png")));
+			resources.put("oil", ImageIO.read(getClass().getResourceAsStream("images/resources/oil.png")));
+			resources.put("uranium", ImageIO.read(getClass().getResourceAsStream("images/resources/uranium.png")));
+			
 			darkMap = ImageIO.read(getClass().getResourceAsStream("images/maps/map3.jpg"));
 			emptyMap = ImageIO.read(getClass().getResourceAsStream("images/maps/USA_MAP_3.jpg"));
 			startScreen = ImageIO.read(getClass().getResourceAsStream("images/ui/startScreen.jpg"));
@@ -485,6 +526,7 @@ public class PowerGridPanel extends JPanel {
 				if(i!=48)
 					plants.put(i, ImageIO.read(getClass().getResourceAsStream("images/powerplants/" + i + ".png")));
 			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (FontFormatException e) {
