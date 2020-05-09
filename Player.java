@@ -45,7 +45,7 @@ public class Player implements Comparable  {
 		if(plants.size() < 4)
 			plants.add(p);
 		else {
-			
+			System.out.println("You stupid fu");
 		}
 		Collections.sort(plants);
 	}
@@ -75,6 +75,7 @@ public class Player implements Comparable  {
 	}
 	
 	public PowerPlant getLargestPlant() {
+		System.out.println(plants.get(plants.size()-1));
 		return plants.get(plants.size()-1);
 	}
 	public int hashCode() {
@@ -83,15 +84,6 @@ public class Player implements Comparable  {
 	public int compareTo(Object o) 
 	{
 		Player p = (Player) o;
-		if(getCities() == null || p.getCities() == null)
-		{
-			if(getCities() != null)
-				return 1;
-			else if(p.getCities() != null)
-				return -1;
-			else
-				return getLargestPlant().compareTo(p.getLargestPlant());
-		}
 		if(getCities().size() < p.getCities().size())
 			return -1;
 		else if(getCities().size() > p.getCities().size())
