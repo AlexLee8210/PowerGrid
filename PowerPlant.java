@@ -111,6 +111,10 @@ public class PowerPlant implements Comparable {
 		PowerPlant p = (PowerPlant) o;
 		return num - p.getNum();
 	}
+	public boolean equals(Object o) {
+		PowerPlant p = (PowerPlant) o;
+		return p.getNum() == getNum();
+	}
 	public String toString() // for testing
 	{
 		return "" + num/* getNum() + " " + getPower() + " " + consumedMats + " " + getType() */;
