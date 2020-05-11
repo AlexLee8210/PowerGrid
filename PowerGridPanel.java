@@ -27,66 +27,94 @@ import static java.lang.System.out;
 
 public class PowerGridPanel extends JPanel {
 	
-	private int w, h;
+	private int w, h, prevPhase;
 	private GameState gs;
 	private BufferedImage frame, emptyMap, darkMap, startScreen, downArrow, menuBg;
 	private HashMap<String, BufferedImage> houses, resources; //used for showing image from string
 	private Font f1;
-	private boolean firstRound; //used in auction
+	//private boolean firstRound; //used in auction
 	//auction stuff
 	private HashMap<Integer, BufferedImage> plants;
 	private PowerPlant auctionPlant;
 	private JTextField offer;
 	private JButton offerB, no, pp1, pp2, pp3;
-	private JLabel baka, currentBid;
+	private JLabel auctionText, currentBid;
 	private LinkedHashMap<JButton, PowerPlant> plantMarketButtons;
-	private boolean bidWin, bidwait, tooManyPP;
+	private boolean bidWin, tooManyPP;
 	private Player bidWinner;
 	private int bid, bidRound;
 	//aucton stuff end
+	//ResourceMarket
+	private JLabel marketText;
+	private JButton rpp1, rpp2, rpp3;
+	private PowerPlant rPP;
+	private String ppType;
+	private JButton nextPhase3, checkPrice, buyResource;
+	private JTextField[] buy;
+	//ResourceMarketEnd
 	
 	public PowerGridPanel(int w, int h, GameState gs) {
 		houses = new HashMap<>();
+		prevPhase = 0;
 		this.w = w;
 		this.h = h;
 		this.gs = gs;
 		plants = new HashMap<>();
 		resources = new HashMap<>();
 		plantMarketButtons = new LinkedHashMap<>();
-		bidwait = false;
 		setBackground(Color.WHITE);
 		makeImages();
-		firstRound = true;
+		
 		makeAuctionButtons();
 		auctionPlant = null;
 		bidRound = 0;
 		tooManyPP = false;
+		rPP = null;
+		ppType = null;
+		makeResourceStuff();
 	}
 	
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		int phase = gs.getPhase();
 		if(phase == 1) {
-			if(firstRound)
+			if(gs.isFirstRound())
 				gs.randomizePlayers();
 			else
 				gs.determineOrder();
 			gs.nextPhase();
 			repaint();
+			prevPhase = 1;
 		}
 		else if(phase == 2) {
+			if(prevPhase == 5) {
+				addAuctionStuff();
+			}
 			drawPhase2(g);
+			prevPhase = 2;
 		}
 		else if(phase == 3) {
+			if(bidWin) {
+				drawPhase2(g);
+			}
+			else {
+				if(prevPhase == 2) {
+					addResourceStuff();
+					removeAuctionStuff();
+					gs.determineReverseOrder();
+				}
+				drawPhase3(g);
+				prevPhase = 3;
+			}
 			
 		}
 		else if(phase == 4) {
-			
+			prevPhase = 4;
 		}
 		else if(phase == 5) {
-			
-			firstRound = false;
+			prevPhase = 5;
 		}
+		
 		g.drawImage(frame, 0, 0, w, h, null);
 	}
 	///auctioning
@@ -100,15 +128,16 @@ public class PowerGridPanel extends JPanel {
 				Player p = players.get(i);
 				g.drawImage(houses.get(p.getColor()), 120 + 45*(i), h-177, 35, 35, null);
 				g.drawString(Integer.toString(p.getNumber()), 130 + 45*(i), h-150);
-				//out.println(gs.getCurrentPlayer());
 				if(p.equals(bidWinner))
 					g.drawImage(downArrow, 125 + 45*(i), h-195, 24, 15, null);
 			}
 			drawResourceMarket(g);
+			g.setFont(f1.deriveFont(30f));
 			g.drawString("Order: ", 50, h-150);
 			g.drawString("Elektros: " + gs.getCurrentPlayer().getElektros(), w-180, h-50);
 			g.drawString("Owned Power Plants: ", 50, 60);
-			ArrayList<PowerPlant> cppp = bidWinner.getPlants();
+			ArrayList<PowerPlant> cppp = gs.getCurrentPlayer().getPlants();
+			g.setFont(f1.deriveFont(30f));
 			for(int i = 0; i < cppp.size(); i++) {
 				g.drawImage(plants.get(cppp.get(i).getNum()), 50, 80+i*110, 100, 100, null);
 			}
@@ -126,11 +155,16 @@ public class PowerGridPanel extends JPanel {
 			for(int i = 0; i < 4; i++)
 				if(!gs.getCanBid().get(players.get(i)))
 					g.fillRect(120 + 45*(i), h-177, 35, 36);
-			offerB.setBounds(w/2-100, h/2+225, 98, 50);
-			offer.setBounds(w/2-100, h/2+170, 200, 50);
-			no.setBounds(w/2+2, h/2+225, 98, 50);
-			baka.setBounds(w/2-150, h/2+270, 300, 40);
+			offerB.setVisible(false);
+			offer.setVisible(false);
+			no.setVisible(false);
+//			offerB.setBounds(w/2-100, h/2+225, 98, 50);
+//			offer.setBounds(w/2-100, h/2+170, 200, 50);
+//			no.setBounds(w/2+2, h/2+225, 98, 50);
+			auctionText.setBounds(w/2-150, h/2+270, 300, 40);
 			currentBid.setBounds(w/2-75, 70, 150, 40);
+//			
+//			g.drawImage(menuBg, w/2+2, h/2+225, 98, 50, null);
 			Iterator<JButton> iter = plantMarketButtons.keySet().iterator();
 			for(int i = 0; i < 2; i++) {
 				for(int j = 0; j < 4; j++) {
@@ -139,11 +173,10 @@ public class PowerGridPanel extends JPanel {
 				}
 			}
 			g.setColor(Color.WHITE);
-			g.setFont(f1.deriveFont(16f));
-			g.drawString("Pick a plant to remove", 50, 450);
-			add(pp1);
-			add(pp2);
-			add(pp3);
+			g.setFont(f1.deriveFont(24f));
+			g.drawImage(menuBg, w/2-150, h/2-75, 300, 150, null);
+			g.drawString("You have too many Power Plants", w/2-115, h/2-5);	
+			g.drawString("Pick a plant to remove", w/2-85, h/2+25);
 			pp1.setBounds(50, 80, 100, 100);
 			pp2.setBounds(50, 190, 100, 100);
 			pp3.setBounds(50, 300, 100, 100);
@@ -153,8 +186,9 @@ public class PowerGridPanel extends JPanel {
 			g.setColor(Color.WHITE);
 			
 			fillScreen(g, darkMap);
-			drawPlayers(g);
+			drawPlayers(g, false);
 			drawResourceMarket(g);
+			g.setFont(f1.deriveFont(30f));
 			g.drawString("Owned Power Plants: ", 50, 60);
 			ArrayList<PowerPlant> cppp = gs.getCurrentPlayer().getPlants();
 			for(int i = 0; i < cppp.size(); i++) {
@@ -175,12 +209,15 @@ public class PowerGridPanel extends JPanel {
 				if(!gs.getCanBid().get(players.get(i)))
 					g.fillRect(120 + 45*(i), h-177, 35, 36);
 			offerB.setBounds(w/2-100, h/2+225, 98, 50);
-			g.drawImage(menuBg, w/2-100, h/2+225, 98, 50, null);
 			offer.setBounds(w/2-100, h/2+170, 200, 50);
 			no.setBounds(w/2+2, h/2+225, 98, 50);
-			g.drawImage(menuBg, w/2+2, h/2+225, 98, 50, null);
-			baka.setBounds(w/2-150, h/2+270, 300, 40);
+			auctionText.setBounds(w/2-150, h/2+270, 300, 40);
 			currentBid.setBounds(w/2-75, 70, 150, 40);
+			offerB.setVisible(true);
+			offer.setVisible(true);
+			no.setVisible(true);
+			g.drawImage(menuBg, w/2-100, h/2+225, 98, 50, null);
+			g.drawImage(menuBg, w/2+2, h/2+225, 98, 50, null);
 			Iterator<JButton> iter = plantMarketButtons.keySet().iterator();
 			for(int i = 0; i < 2; i++) {
 				for(int j = 0; j < 4; j++) {
@@ -195,22 +232,21 @@ public class PowerGridPanel extends JPanel {
 				bidWin = false;
 				bidRound = 0;
 				
-//				g.setColor(Color.WHITE);
-//				g.drawImage(menuBg, w/2-150, h/2-100, 300, 200, null);
-//				g.setFont(f1.deriveFont(24f));
-//				g.drawString(bidWinner.toString() + " gets power plant " + auctionPlant.getNum(), w/2 - 100, h/2);
-//				out.println(bidWinner.getNumPlants());
 				if(bidWinner.getNumPlants() == 3) {
 					tooManyPP = true;
+					drawPhase2(g);
 				}
 				else {
 					bidWinner.addPlant(auctionPlant);
-					baka.setText(bidWinner.toString() + " gets Power Plant " + auctionPlant.getNum());
+					auctionText.setText(bidWinner.toString() + " gets Power Plant " + auctionPlant.getNum());
 					auctionPlant = null;
 					bidWinner = null;
 				}
 			}
 		}
+//		if(bidWin)
+//			bidWin = false;
+
 	}
 	private void makeAuctionButtons() {
 		ArrayList<PowerPlant> ppMarket = gs.getMarketPlants();
@@ -223,11 +259,8 @@ public class PowerGridPanel extends JPanel {
 		pp1.getModel().addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				ButtonModel m = (ButtonModel) e.getSource();
-				if (m.isPressed()) {
+				if (m.isPressed() && tooManyPP) {
 					bidWinner.removePlant(0);
-					remove(pp1);
-					remove(pp2);
-					remove(pp3);
 					bidWinner.addPlant(auctionPlant);
 					bidWinner = null;
 					auctionPlant = null;
@@ -244,11 +277,8 @@ public class PowerGridPanel extends JPanel {
 		pp2.getModel().addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				ButtonModel m = (ButtonModel) e.getSource();
-				if (m.isPressed()) {
+				if (m.isPressed() && tooManyPP) {
 					bidWinner.removePlant(1);
-					remove(pp1);
-					remove(pp2);
-					remove(pp3);
 					bidWinner.addPlant(auctionPlant);
 					bidWinner = null;
 					auctionPlant = null;
@@ -266,11 +296,8 @@ public class PowerGridPanel extends JPanel {
 		pp3.getModel().addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				ButtonModel m = (ButtonModel) e.getSource();
-				if (m.isPressed()) {
+				if (m.isPressed() && tooManyPP) {
 					bidWinner.removePlant(2);
-					remove(pp1);
-					remove(pp2);
-					remove(pp3);
 					bidWinner.addPlant(auctionPlant);
 					bidWinner = null;
 					auctionPlant = null;
@@ -279,16 +306,16 @@ public class PowerGridPanel extends JPanel {
 				}
 			}
 		});
-		
-		baka = new JLabel("Pick a Power Plant to bid for it!");
-		baka.setFont(f1.deriveFont(20f));
-		baka.setForeground(Color.WHITE);
-		baka.setHorizontalAlignment(baka.CENTER);
+
+		auctionText = new JLabel("Pick a Power Plant to bid for it!");
+		auctionText.setFont(f1.deriveFont(20f));
+		auctionText.setForeground(Color.WHITE);
+		auctionText.setHorizontalAlignment(auctionText.CENTER);
 		
 		currentBid = new JLabel("Current Bid: " + bid);
 		currentBid.setFont(f1.deriveFont(30f));
 		currentBid.setForeground(Color.WHITE);
-		currentBid.setHorizontalAlignment(baka.CENTER);
+		currentBid.setHorizontalAlignment(auctionText.CENTER);
 		
 		offer = new JTextField("Enter Bid");
 		offer.setHorizontalAlignment(offer.CENTER);
@@ -312,30 +339,29 @@ public class PowerGridPanel extends JPanel {
 							if(tempBid > bid) {
 								if(tempBid >= auctionPlant.getNum()) {
 									if(tempBid > gs.getCurrentPlayer().getElektros())
-										baka.setText("You don't have enough Elektros!");
+										auctionText.setText("You don't have enough Elektros!");
 									else {
 										bid = Integer.parseInt(text);
 										currentBid.setText("Current Bid: " + bid);
-										baka.setText(gs.getCurrentPlayer() + " bids " + text + " elektros");
+										auctionText.setText(gs.getCurrentPlayer() + " bids " + text + " elektros");
 										gs.nextTurn();
 										gs.checkBidWinner();
+										bidRound++;
 									}
 								}
 								else
-									baka.setText("Bid must be greater than the power plant size!");
+									auctionText.setText("Bid must be greater than the power plant size!");
 							}
 							else {
-								baka.setText("Bid must be greater than the current bid!");
-								out.println(tempBid);
-								out.println(bid);
+								auctionText.setText("Bid must be greater than the current bid!");
 							}
 							
 						} catch(Exception e1) {
-							baka.setText("Bid must be an Integer");
+							auctionText.setText("Bid must be an Integer");
 						}
 					}
 					else {
-						baka.setText("Pick a Power Plant to bid for!");
+						auctionText.setText("Pick a Power Plant to bid for!");
 					}
 					repaint();
 				}
@@ -352,11 +378,11 @@ public class PowerGridPanel extends JPanel {
 			public void stateChanged(ChangeEvent e) {
 				ButtonModel m = (ButtonModel) e.getSource();
 				if (m.isPressed()) {
-					if(firstRound && gs.getCurrentPlayer().equals(gs.getAuctionStartPlayer()) && bidRound == 0) {
-						baka.setText("First Player Must Bid!");
+					if(gs.isFirstRound() && gs.getCurrentPlayer().equals(gs.getAuctionStartPlayer()) && bidRound == 0) {
+						auctionText.setText("First Player Must Bid!");
 					}
 					else {
-						baka.setText(gs.getCurrentPlayer().toString() + " passes!");
+						auctionText.setText(gs.getCurrentPlayer().toString() + " passes!");
 						gs.passBid();
 						gs.nextTurn();
 						bidRound++;
@@ -366,7 +392,6 @@ public class PowerGridPanel extends JPanel {
 				}
 			}
 		});
-		
 		
 		for(int i = 0; i < 2; i++) {
 			for(int j = 0; j < 4; j++) {
@@ -383,15 +408,15 @@ public class PowerGridPanel extends JPanel {
 						ButtonModel m = (ButtonModel) e.getSource();
 						if(m.isPressed()) {
 							if(row == 1) {
-								baka.setText("Can't Bid For Second Row!");
+								auctionText.setText("Can't Bid For Second Row!");
 							}
 							else {
 								if(gs.getAuctionStartPlayer().equals(gs.getCurrentPlayer()) && bidRound == 0) {
-									baka.setText("Bidding for Power Plant: " + ppMarket.get(col+(row*4)));
+									auctionText.setText("Bidding for Power Plant: " + ppMarket.get(col+(row*4)));
 									auctionPlant = ppMarket.get(col);
 								}
 								else {
-									baka.setText("You must Bid or Pass for Power Plant " + auctionPlant);
+									auctionText.setText("You must Bid or Pass for Power Plant " + auctionPlant);
 								}
 							}
 						}
@@ -405,22 +430,9 @@ public class PowerGridPanel extends JPanel {
 		offerB.setBounds(w/2-100, h/2+225, 98, 50);
 		offer.setBounds(w/2-100, h/2+170, 200, 50);
 		no.setBounds(w/2+2, h/2+225, 98, 50);
-		baka.setBounds(w/2-150, h/2+270, 300, 40);
+		auctionText.setBounds(w/2-150, h/2+270, 300, 40);
 		currentBid.setBounds(w/2-75, 70, 150, 40);
-		add(offer);
-		add(offerB);
-		add(no);
-		add(baka);
-		add(currentBid);
-		
-		Iterator<JButton> iter = plantMarketButtons.keySet().iterator();
-		for(int i = 0; i < 2; i++) {
-			for(int j = 0; j < 4; j++) {
-				JButton b = iter.next();
-				b.setBounds(310+175*j, 125+200*i, 150, 150);
-				add(b);
-			}
-		}			
+		addAuctionStuff();
 	}
 	public int getBid() {
 		return bid;
@@ -432,37 +444,349 @@ public class PowerGridPanel extends JPanel {
 	public PowerPlant getAuctionPlant() {
 		return auctionPlant;
 	}
+	public void removeAuctionPlant() {
+		auctionPlant = null;
+	}
+	public void addAuctionStuff() {
+		add(offerB);
+		add(offer);
+		add(no);
+		add(auctionText);
+		add(currentBid);
+		add(pp1);
+		add(pp2);
+		add(pp3);
+		Iterator<JButton> iter = plantMarketButtons.keySet().iterator();
+		for(int i = 0; i < 2; i++) {
+			for(int j = 0; j < 4; j++) {
+				JButton b = iter.next();
+				add(b);
+			}
+		}			
+	}
 	public void removeAuctionStuff() {
 		remove(offerB);
 		remove(offer);
 		remove(no);
-		remove(baka);
+		remove(auctionText);
 		remove(currentBid);
+		remove(pp1);
+		remove(pp2);
+		remove(pp3);
+		Iterator<JButton> iter = plantMarketButtons.keySet().iterator();
+		for(int i = 0; i < 2; i++) {
+			for(int j = 0; j < 4; j++) {
+				JButton b = iter.next();
+				remove(b);
+			}
+		}	
 	}
 	///auctioning end
-	///resource buying start
+	///resource buying start (Phase 3)
 	private void drawPhase3(Graphics g) {
+		g.setFont(f1.deriveFont(30f));
+		g.setColor(Color.WHITE);
+		fillScreen(g, darkMap);
+		g.drawImage(frame, 0, 0, w, h, null);
+		g.drawString("Power Plants: ", w/2-20, 60);
+		Player cp = gs.getCurrentPlayer();
+		int i = 0;
+		for(PowerPlant pp: cp.getPlants()) {
+			g.drawImage(plants.get(pp.getNum()), w/2-250+175*i, 80, 150, 150, null);
+			g.drawString("Num Mats: " + pp.getMats(), w/2-240+175*i, 140);
+			i++;
+		}
+		drawPlayers(g, true);
+		Font font = f1.deriveFont(30f);
+		g.setColor(Color.WHITE);
+		g.setFont(font);
+		TreeMap<String, Integer> resourceMarket = gs.getResourceMarket();
+		g.setFont(font.deriveFont(30f));
+		int size = 100;
+		g.drawImage(resources.get("coal"), 310, h/2, size, size, null);
+		g.drawString("Coal: " + resourceMarket.get("coal"), 320, h/2-10);
+		g.drawImage(resources.get("garbage"), 385+size, h/2, size, size, null);
+		g.drawString("Garbage: " + resourceMarket.get("garbage"), 390+size, h/2-10);
+		g.drawImage(resources.get("oil"), 460+size*2, h/2, size, size, null);
+		g.drawString("Oil: " + resourceMarket.get("oil"), 475+size*2, h/2-10);
+		g.drawImage(resources.get("uranium"), 535+size*3, h/2, size, size, null);
+		g.drawString("Uranium: " + resourceMarket.get("uranium"), 535+size*3, h/2-10);
+		g.drawImage(menuBg, w-200, h-125, 150, 50, null);
+		g.drawImage(menuBg, w-355, h-125, 150, 50, null);
+		g.drawImage(menuBg, w-510, h-125, 150, 50, null);
+		rpp1.setBounds( w/2-250, 80, 150, 150);
+		if(cp.getNumPlants() == 2) {
+			rpp2.setBounds( w/2-75, 80, 150, 150);
+			rpp2.setVisible(true);
+			rpp3.setVisible(false);
+		}
+		if(cp.getNumPlants() == 3) {
+			rpp3.setBounds( w/2+100, 80, 150, 150);
+			rpp3.setVisible(true);
+			rpp2.setVisible(true);
+		}
+		setResourceBounds();
+		if(rPP!=null) {
+			if(ppType.equals("coal")) {
+				buy[0].setBounds(300, h/2+115, 100, 50);
+				buy[0].setVisible(true);
+				buy[1].setVisible(false);
+				buy[2].setVisible(false);
+				buy[3].setVisible(false);
+			}
+			else if(ppType.equals("garbage")) {
+				buy[1].setBounds(475, h/2+115, 100, 50);
+				buy[1].setVisible(true);
+				buy[0].setVisible(false);
+				buy[2].setVisible(false);
+				buy[3].setVisible(false);
+			}
+			else if(ppType.equals("oil")) {
+				buy[2].setBounds(650, h/2+115, 100, 50);
+				buy[2].setVisible(true);
+				buy[1].setVisible(false);
+				buy[0].setVisible(false);
+				buy[3].setVisible(false);
+			}
+			else if(ppType.equals("uranium")) {
+				buy[3].setBounds(825, h/2+115, 100, 50);
+				buy[3].setVisible(true);
+				buy[1].setVisible(false);
+				buy[2].setVisible(false);
+				buy[0].setVisible(false);
+			}
+			else if(ppType.equals("hybrid")) {
+				buy[0].setBounds(310, h/2+115, 100, 50);
+				buy[2].setBounds(650, h/2+115, 100, 50);
+				buy[0].setVisible(true);
+				buy[2].setVisible(true);
+				buy[1].setVisible(false);
+				buy[3].setVisible(false);
+			}
+		}
+		out.println("ashcasiojas"); //something being continuously added idk what but repaint is looping
+	}
+	private void makeResourceStuff() {
+		marketText = new JLabel("Pick a Power Plant to buy Resources for");
+		marketText.setForeground(Color.WHITE);
+		marketText.setFont(f1.deriveFont(24f));
 		
+		marketText.setHorizontalAlignment(marketText.CENTER);
+		
+		rpp1 = new JButton();
+		rpp1.setFocusPainted(false);
+		rpp1.setOpaque(false);
+		rpp1.setContentAreaFilled(false);
+		//rpp1.setBorderPainted(false);
+		rpp1.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if (m.isPressed()) {
+					Player cp = gs.getCurrentPlayer();
+					if(rPP!=null && !rPP.equals(cp.getPlants().get(0)))
+						for(JTextField tf: buy) {
+							tf.setVisible(false);
+							tf.setText("");
+						}
+					rPP = cp.getPlants().get(0);
+					ppType = rPP.getType();
+					repaint();
+				}
+			}
+		});
+		rpp2 = new JButton();
+		rpp2.setFocusPainted(false);
+		rpp2.setOpaque(false);
+		rpp2.setContentAreaFilled(false);
+		//rpp2.setBorderPainted(false);
+		rpp2.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if (m.isPressed()) {
+					Player cp = gs.getCurrentPlayer();
+					if(rPP!=null && !rPP.equals(cp.getPlants().get(1)))
+						for(JTextField tf: buy) {
+							tf.setVisible(false);
+							tf.setText("");
+						}
+					try {
+						rPP = cp.getPlants().get(1);
+						ppType = rPP.getType();
+					} catch(Exception e1) {}
+					repaint();
+				}
+			}
+		});
+		rpp3 = new JButton();
+		rpp3.setFocusPainted(false);
+		rpp3.setOpaque(false);
+		rpp3.setContentAreaFilled(false);
+		//rpp3.setBorderPainted(false);
+		rpp3.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if (m.isPressed()) {
+					Player cp = gs.getCurrentPlayer();
+					if(rPP!=null && !rPP.equals(cp.getPlants().get(2)))
+						for(JTextField tf: buy) {
+							tf.setVisible(false);
+							tf.setText("");
+						}
+					try {
+						rPP = cp.getPlants().get(2);
+						ppType = rPP.getType();
+					} catch(Exception e1) {}
+					repaint();
+				}
+			}
+		});
+		
+		nextPhase3 = new JButton("Next Turn");
+		nextPhase3.setFont(f1.deriveFont(20f));
+		nextPhase3.setForeground(Color.WHITE);
+		nextPhase3.setFocusPainted(false);
+		nextPhase3.setOpaque(false);
+		nextPhase3.setContentAreaFilled(false);
+		nextPhase3.setBorderPainted(false);
+		nextPhase3.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if (m.isPressed()) {
+					gs.nextTurn();
+					for(JTextField tf: buy) {
+						tf.setVisible(false);
+						tf.setText("");
+					}
+					rPP = null;
+					ppType = null;
+					repaint();
+				}
+			}
+		});
+		
+		checkPrice = new JButton("Check Prices");
+		checkPrice.setFont(f1.deriveFont(20f));
+		checkPrice.setForeground(Color.WHITE);
+		checkPrice.setFocusPainted(false);
+		checkPrice.setOpaque(false);
+		checkPrice.setContentAreaFilled(false);
+		checkPrice.setBorderPainted(false);
+		checkPrice.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if (m.isPressed()) {
+					if(rPP!=null) {
+						int amt = 0, num = 0;
+						TreeMap<String, Integer> resourceMarket = gs.getResourceMarket();
+						String[] res = {"coal", "garbage", "oil", "uranium"};
+						for(int i = 0; i < 4; i++) {
+							JTextField tf = buy[i];
+							try {
+								num = Integer.parseInt(tf.getText());
+								for(int j = 0; j < num; j++) {
+									amt += gs.calcCost(ppType, resourceMarket.get(res[i])-j);
+								}
+							} catch (Exception e1) {}
+						}
+						marketText.setText("This would cost: " + amt + " elektros.");
+					}
+				}
+			}
+		});
+		
+		buyResource = new JButton("Buy Resources");
+		buyResource.setFont(f1.deriveFont(20f));
+		buyResource.setForeground(Color.WHITE);
+		buyResource.setFocusPainted(false);
+		buyResource.setOpaque(false);
+		buyResource.setContentAreaFilled(false);
+		buyResource.setBorderPainted(false);
+		buyResource.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if (m.isPressed()) {
+					if(rPP!=null) {
+						int amt = 0, num = 0;
+						TreeMap<String, Integer> resourceMarket = gs.getResourceMarket();
+						String[] res = {"coal", "garbage", "oil", "uranium"};
+						for(int i = 0; i < 4; i++) {
+							JTextField tf = buy[i];
+							try {
+								num = Integer.parseInt(tf.getText());
+								for(int j = 0; j < num; j++) {
+									amt += gs.calcCost(ppType, resourceMarket.get(res[i])-j);
+								}
+							} catch (Exception e1) {}
+						}
+						if(amt > gs.getCurrentPlayer().getElektros()) {
+							marketText.setText("You don't have enough elektros!");
+						}
+						else if(num > rPP.materialsTillFull()) {
+							marketText.setText("The Power Plant can't hold this much!");
+						}
+						else {
+							gs.getCurrentPlayer().buy(amt);
+							rPP.addMaterial(num);
+							gs.getResourceMarket().put(ppType, gs.getResourceMarket().get(ppType)-num);
+						}
+						repaint();
+					}
+				}
+			}
+		});
+		
+		buy = new JTextField[4];
+		for(int i = 0; i < 4; i++) {
+			buy[i] = new JTextField("");
+		}
+	}
+	private void addResourceStuff() {
+		add(marketText);
+		add(rpp1);
+		add(rpp2);
+		add(rpp3);
+		add(nextPhase3);
+		add(checkPrice);
+		add(buyResource);
+		for(JTextField tf: buy)
+			add(tf);
+		setResourceBounds();
+	}
+
+	private void setResourceBounds() {
+//		for(int i = 0; i < 8; i++) {
+//			if(i%2 == 0)
+//				rCostButtons[i].setBounds();
+//		}
+//		rpp1.setBounds( w/2-250, 80, 150, 150);
+//		rpp2.setBounds( w/2-425, 80, 150, 150);
+//		rpp2.setBounds( w/2-600, 80, 150, 150);
+		marketText.setBounds(440, h/2-100, 400, 50);
+		nextPhase3.setBounds(w-200, h-125, 150, 50);
+		checkPrice.setBounds(w-355, h-125, 150, 50);
+		buyResource.setBounds(w-510, h-125, 150, 50);
 	}
 	///resource buying end
 	private void fillScreen(Graphics g, BufferedImage b) {
 		g.drawImage(b, 38, 29, w-77, h-58, null);
 	}
 	
-	private void drawPlayers(Graphics g) {
+	private void drawPlayers(Graphics g, boolean low) {
+		int height = h-150;
+		if(low)
+			height = h-50;
 		Font font = f1.deriveFont(30f);
 		g.setColor(Color.WHITE);
 		g.setFont(font);
 		ArrayList<Player> players = gs.getPlayers();
 		for(int i = 0; i < 4; i++) {
 			Player p = players.get(i);
-			g.drawImage(houses.get(p.getColor()), 120 + 45*(i), h-177, 35, 35, null);
-			g.drawString(Integer.toString(p.getNumber()), 130 + 45*(i), h-150);
-			//out.println(gs.getCurrentPlayer());
+			g.drawImage(houses.get(p.getColor()), 120 + 45*(i), height-27, 35, 35, null);
+			g.drawString(Integer.toString(p.getNumber()), 130 + 45*(i), height);
 			if(p.equals(gs.getCurrentPlayer()))
-				g.drawImage(downArrow, 125 + 45*(i), h-195, 24, 15, null);
+				g.drawImage(downArrow, 125 + 45*(i), height-45, 24, 15, null);
 		}
-		g.drawString("Order: ", 50, h-150);
+		g.drawString("Order: ", 50, height);
 		g.drawString("Elektros: " + gs.getCurrentPlayer().getElektros(), w-180, h-50);
 	}
 	private void drawResourceMarket(Graphics g) {
@@ -471,26 +795,16 @@ public class PowerGridPanel extends JPanel {
 		g.setFont(font);
 		TreeMap<String, Integer> resourceMarket = gs.getResourceMarket();
 		g.drawString("Resource Market:", 50, h-100);
-		int i = 0;
-		g.setFont(font.deriveFont(12f));
+		g.setFont(font.deriveFont(14f));
 		
-		for(String k: resourceMarket.keySet()) {
-			if(k.equals("oil")) {
-				g.drawImage(resources.get(k), 50 + 45*i, h-90, 35, 35, null);
-				g.drawString(k + ": " + resourceMarket.get(k), 51 + 48*i, h-40);
-				i++;
-			}
-			else if(k.equals("coal")) {
-				g.drawImage(resources.get(k), 50 + 45*i, h-90, 35, 35, null);
-				g.drawString(k + ": " + resourceMarket.get(k), 53, h-40);
-				i++;
-			}
-			else {
-				g.drawImage(resources.get(k), 50 + 45*i, h-90, 35, 35, null);
-				g.drawString(k + ": " + resourceMarket.get(k), 50 + 45*i, h-40);
-				i++;
-			}
-		}
+		g.drawImage(resources.get("coal"), 50, h-90, 35, 35, null);
+		g.drawString("Coal: " + resourceMarket.get("coal"), 51, h-40);
+		g.drawImage(resources.get("garbage"), 115, h-90, 35, 35, null);
+		g.drawString("Garbage: " + resourceMarket.get("garbage"), 110, h-40);
+		g.drawImage(resources.get("oil"), 180, h-90, 35, 35, null);
+		g.drawString("Oil: " + resourceMarket.get("oil"), 184, h-40);
+		g.drawImage(resources.get("uranium"), 245, h-90, 35, 35, null);
+		g.drawString("Uranium: " + resourceMarket.get("uranium"), 238, h-40);
 	}
 	
 	//makes the images so no clutter in also font

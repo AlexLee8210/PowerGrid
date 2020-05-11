@@ -113,7 +113,7 @@ public class PowerPlant implements Comparable {
 	}
 	public boolean equals(Object o) {
 		PowerPlant p = (PowerPlant) o;
-		return p.getNum() == getNum();
+		return num == p.getNum();
 	}
 	public String toString() // for testing
 	{

@@ -3,9 +3,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -23,6 +23,7 @@ public class GameState {
 	private ArrayList<Player> players, alreadyBid; //alreadyBid is al of players who have already bought a pp that round
 	private Player currentPlayer, auctionStartPlayer;
 	private HashMap<Player, Boolean> canBid;
+	private boolean firstRound;
 	
 	
 	public GameState() {
@@ -52,7 +53,7 @@ public class GameState {
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		for(Player p: players)
 			canBid.put(p, true);
-		
+		firstRound = true;
 	}
 	public void passBid() {
 		canBid.put(currentPlayer, false);
@@ -64,10 +65,10 @@ public class GameState {
 			currentPlayer = players.get(0);
 			while(!canBid.get(currentPlayer) && i < 3) { //while the currentPlayer cant bid
 				turn = (turn+1)%4;
-				currentPlayer = new Player(players.get(turn).getNumber());	//currentPlayer becomes the next one
+				currentPlayer = players.get(turn);	//currentPlayer becomes the next one
 				i++;
 			}
-			auctionStartPlayer = new Player(currentPlayer.getNumber());
+			auctionStartPlayer = currentPlayer;
 		}
 		return auctionStartPlayer;
 	}
@@ -76,14 +77,23 @@ public class GameState {
 	}
 	public void randomizePlayers() {
 		Collections.shuffle(players);
+//		for(int i = 0; i < 3; i++) {
+//			players.get(i).addPlant(new PowerPlant(03, 1, 2, "oil"));
+//			players.get(i).addPlant(new PowerPlant(04, 1, 2, "coal"));
+//			players.get(i).addPlant(new PowerPlant(05, 1, 2, "hybrid"));
+//		}
+		
 		//out.println(players);
 		currentPlayer = players.get(0);
 		auctionStartPlayer = players.get(0);
 	}
 	public void nextPhase() {
+		turn = 0;
 		phase = (phase + 1) % 6;
 	}
-	
+	public boolean isFirstRound() {
+		return firstRound;
+	}
 	public void nextTurn() {
 		if(phase == 2) {
 			if(auctionStartPlayer == null) {
@@ -101,13 +111,15 @@ public class GameState {
 			}
 		}
 		else if(phase == 3) {
-			
+			turn = (turn+1)%4;
+			currentPlayer = players.get(turn);
 		}
 		else if(phase == 4) {
 			
 		}
 		else if(phase == 5) {
-			
+			if(firstRound)
+				firstRound = false;
 		}
 		
 	}
@@ -118,19 +130,17 @@ public class GameState {
 				k++;
 		}
 		if(k == 1) {
-			PowerPlant pp = pgPanel.getAuctionPlant();
 			pgPanel.setBidder(currentPlayer);
 			board.removeMarketPlant(pgPanel.getAuctionPlant());
-			
-			currentPlayer.addElektros(-pgPanel.getBid());
+			board.reOrgMarketPlants();
+			currentPlayer.buy(pgPanel.getBid());
 			alreadyBid.add(currentPlayer);
 			if(alreadyBid.size() == 4) { //auction ended
-				nextPhase();
-				pgPanel.removeAuctionStuff();
-				for(int j = 3; j >=0; j--)
+				for(int j = 3; j >= 0; j--)
 					alreadyBid.remove(j);
 				for(Player p: players)
 					canBid.put(p, true);
+				nextPhase();
 			}
 			else {
 				for(Player p: players) {
@@ -139,12 +149,16 @@ public class GameState {
 					else
 						canBid.put(p, false);
 				}
+				nextTurn();
 			}
 			auctionStartPlayer = null;
-			nextTurn();
+			
 			return true;
 		}
 		return false;
+	}
+	public ArrayList<Player> getAlreadyBid() {
+		return alreadyBid;
 	}
 	public void setTurn(int turn) {
 		this.turn = turn;
@@ -165,7 +179,12 @@ public class GameState {
 		return phase;
 	}
 	public void determineOrder() {
-		setPlayers(board.determineOrder(players));
+		Collections.sort(players);
+		Collections.reverse(players);
+		currentPlayer = players.get(0);
+	}
+	public void determineReverseOrder() {
+		Collections.sort(players);
 		currentPlayer = players.get(0);
 	}
 	
@@ -186,6 +205,7 @@ public class GameState {
 	public TreeMap<String, Integer> getResourceMarket() {
 		return board.getResourceMarket();
 	}
+	
 	public void buyResources(PowerPlant p, int amt) //cuz if it isnt a hybrid, only one material possible
 	{
 		board.buyResources(getCurrentPlayer(), amt, p);
@@ -208,6 +228,12 @@ public class GameState {
 		 * NOTE: I did not calculate if the player would have enough money for hybrid
 		 * because for ex, the number of oil able to be bought depends on the number of coal bought
 		 */
+	}
+	public int calcCost(String type, int amt) {
+		if(type.equals("uranium"))
+			return board.calcCostUranium(amt);
+		return board.calcCost(amt);
+		
 	}
 	public void auction() {//not sure how to handle exception for first round: players HAVE to choose power plant, and player order redetermined after choosing
 		ArrayList<Integer> bought = new ArrayList<Integer>();

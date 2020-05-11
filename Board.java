@@ -153,13 +153,6 @@ public class Board {
 			toAdd = remain.get(type);
 		resourceMarket.put(type, resourceMarket.get(type) + toAdd);
 	}
-	@SuppressWarnings("unchecked")
-	public ArrayList<Player> determineOrder(ArrayList<Player> players)
-	{
-		Collections.sort(players);
-		//Collections.reverse(players);
-		return players;
-	}
 	public int moneyBuy(PowerPlant p, Player play)
 	{
 		int cash = play.getElektros(), amt = resourceMarket.get(p.getType()), cost = 0, count = 0;

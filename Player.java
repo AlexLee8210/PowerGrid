@@ -42,11 +42,7 @@ public class Player implements Comparable  {
 		citiesOwned.add(c);
 	}
 	public void addPlant(PowerPlant p) {
-		if(plants.size() < 4)
-			plants.add(p);
-		else {
-			System.out.println("You stupid fu");
-		}
+		plants.add(p);
 		Collections.sort(plants);
 	}
 	public int getNumPlants() {
@@ -75,7 +71,7 @@ public class Player implements Comparable  {
 	}
 	
 	public PowerPlant getLargestPlant() {
-		System.out.println(plants.get(plants.size()-1));
+		//System.out.println(plants.get(plants.size()-1) + " " + number);
 		return plants.get(plants.size()-1);
 	}
 	public int hashCode() {
@@ -88,6 +84,26 @@ public class Player implements Comparable  {
 			return -1;
 		else if(getCities().size() > p.getCities().size())
 			return 1;
+		if(plants.size() == 0) {
+			if(p.getPlants().size() == 0) {
+				System.out.println("gey1");
+				return 0;
+			}
+			else {
+				System.out.println("gey2");
+				return -1;
+			}
+		}
+		else if(p.getPlants().size() == 0) {
+			if(plants.size() == 0) {
+				System.out.println("gey3");
+				return 0;
+			}
+			else {
+				System.out.println("gey4");
+				return 1;
+			}
+		}
 		return getLargestPlant().compareTo(p.getLargestPlant());
 	}
 	public boolean equals(Object o) {
