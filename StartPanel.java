@@ -43,8 +43,9 @@ public class StartPanel extends JPanel implements MouseListener {
 	private LinkedHashMap<JButton, Boolean> regionBMap;
 	private JButton[] regionB;
 	private Font f1;
+	private Graph graph;
 
-	public StartPanel(int screenw, int screenh, JFrame f, PowerGridPanel pgPanel, GameState gs) {
+	public StartPanel(int screenw, int screenh, JFrame f, GameState gs, Graph graph) {
 		regionBMap = new LinkedHashMap<>();
 		regionB = new JButton[6];
 		mapSelect = false;
@@ -58,6 +59,7 @@ public class StartPanel extends JPanel implements MouseListener {
 		players.get(2).setColor("blue");
 		players.get(3).setColor("black");
 		BufferedImage startImage = null;
+		this.graph = graph;
 		
 		try {
 			f1 = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("fonts/FetteEngschrift.TTF"))
@@ -155,7 +157,11 @@ public class StartPanel extends JPanel implements MouseListener {
 							startGame.setText("<html>Regions must<br/>be connected!</html>");
 						} else {
 							Container pane = f.getContentPane();
+							graph.setRegionsActive(regionBMap);
+							gs.makeGraph();
 							pane.remove(StartPanel.this);
+							PowerGridPanel pgPanel = new PowerGridPanel(1265, 685, gs);
+							gs.setPGPanel(pgPanel);
 							pane.add(pgPanel);
 							pane.revalidate();
 						}

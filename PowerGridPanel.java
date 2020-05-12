@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 import javax.swing.ButtonModel;
@@ -29,7 +31,7 @@ public class PowerGridPanel extends JPanel {
 	
 	private int w, h, prevPhase;
 	private GameState gs;
-	private BufferedImage frame, emptyMap, darkMap, startScreen, downArrow, menuBg;
+	private BufferedImage frame, emptyMap, darkMap, downArrow, menuBg, usaMap;
 	private HashMap<String, BufferedImage> houses, resources; //used for showing image from string
 	private Font f1;
 	//private boolean firstRound; //used in auction
@@ -52,7 +54,16 @@ public class PowerGridPanel extends JPanel {
 	private JButton nextPhase3, checkPrice, buyResource;
 	private JTextField[] buy;
 	//ResourceMarketEnd
-	
+	//CityBuilding start
+	private HashMap<JButton, Point> cityButtons;
+	private JLabel cityText;
+	private City currentCity, startCity, destCity;
+	private JButton buyCity;
+	//CityBuilding end
+	//phase5 start
+	private int[] playertempelektros;
+	private JButton nextPhase5;
+	//phase5 end
 	public PowerGridPanel(int w, int h, GameState gs) {
 		houses = new HashMap<>();
 		prevPhase = 0;
@@ -72,6 +83,10 @@ public class PowerGridPanel extends JPanel {
 		rPP = null;
 		ppType = null;
 		makeResourceStuff();
+		
+		makeCityButtons();
+		
+		playertempelektros = new int[4];
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -106,12 +121,20 @@ public class PowerGridPanel extends JPanel {
 				drawPhase3(g);
 				prevPhase = 3;
 			}
-			
 		}
 		else if(phase == 4) {
+			if(prevPhase == 3) {
+				removeResourceStuff();
+				addCityButtons();
+				gs.setTurn(0);
+			}
+			drawPhase4(g);
 			prevPhase = 4;
 		}
 		else if(phase == 5) {
+			if(prevPhase == 4)
+				removeCityButtons();
+			drawPhase5(g);
 			prevPhase = 5;
 		}
 		
@@ -491,9 +514,15 @@ public class PowerGridPanel extends JPanel {
 		g.drawString("Power Plants: ", w/2-20, 60);
 		Player cp = gs.getCurrentPlayer();
 		int i = 0;
+		g.setFont(f1.deriveFont(24f));
 		for(PowerPlant pp: cp.getPlants()) {
 			g.drawImage(plants.get(pp.getNum()), w/2-250+175*i, 80, 150, 150, null);
-			g.drawString("Num Mats: " + pp.getMats(), w/2-240+175*i, 140);
+			if(ppType!=null && !ppType.equals("hybrid"))
+				g.drawString("Num Mats: " + pp.getMats(), w/2-230+175*i, h/2-90);
+			else if(ppType!=null) {
+				g.drawString("Num Coal: " + pp.getNumCoal(), w/2-230+175*i, h/2-90);
+				g.drawString("Num Oil: " + pp.getNumOil(), w/2-230+175*i, h/2-60);
+			}
 			i++;
 		}
 		drawPlayers(g, true);
@@ -564,13 +593,12 @@ public class PowerGridPanel extends JPanel {
 				buy[3].setVisible(false);
 			}
 		}
-		out.println("ashcasiojas"); //something being continuously added idk what but repaint is looping
+		out.println("repaint");
 	}
 	private void makeResourceStuff() {
 		marketText = new JLabel("Pick a Power Plant to buy Resources for");
 		marketText.setForeground(Color.WHITE);
 		marketText.setFont(f1.deriveFont(24f));
-		
 		marketText.setHorizontalAlignment(marketText.CENTER);
 		
 		rpp1 = new JButton();
@@ -651,12 +679,13 @@ public class PowerGridPanel extends JPanel {
 		nextPhase3.getModel().addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				ButtonModel m = (ButtonModel) e.getSource();
-				if (m.isPressed()) {
+				if(m.isPressed()) {
 					gs.nextTurn();
 					for(JTextField tf: buy) {
 						tf.setVisible(false);
 						tf.setText("");
 					}
+					out.println(gs.getTurn());
 					rPP = null;
 					ppType = null;
 					repaint();
@@ -706,7 +735,7 @@ public class PowerGridPanel extends JPanel {
 				ButtonModel m = (ButtonModel) e.getSource();
 				if (m.isPressed()) {
 					if(rPP!=null) {
-						int amt = 0, num = 0;
+						int amt = 0, num = 0, tempNum = 0;
 						TreeMap<String, Integer> resourceMarket = gs.getResourceMarket();
 						String[] res = {"coal", "garbage", "oil", "uranium"};
 						for(int i = 0; i < 4; i++) {
@@ -716,6 +745,8 @@ public class PowerGridPanel extends JPanel {
 								for(int j = 0; j < num; j++) {
 									amt += gs.calcCost(ppType, resourceMarket.get(res[i])-j);
 								}
+								if(i == 0)
+									tempNum = num;
 							} catch (Exception e1) {}
 						}
 						if(amt > gs.getCurrentPlayer().getElektros()) {
@@ -726,8 +757,16 @@ public class PowerGridPanel extends JPanel {
 						}
 						else {
 							gs.getCurrentPlayer().buy(amt);
-							rPP.addMaterial(num);
-							gs.getResourceMarket().put(ppType, gs.getResourceMarket().get(ppType)-num);
+							
+							if(ppType!=null && ppType.equals("hybrid")) {
+								gs.getResourceMarket().put("coal", gs.getResourceMarket().get("coal")-tempNum);
+								gs.getResourceMarket().put("oil", gs.getResourceMarket().get("oil")-num);
+								rPP.addMaterialHybrid(tempNum, num);
+							}
+							else {
+								gs.getResourceMarket().put(ppType, gs.getResourceMarket().get(ppType)-num);
+								rPP.addMaterial(num);
+							}
 						}
 						repaint();
 					}
@@ -752,6 +791,17 @@ public class PowerGridPanel extends JPanel {
 			add(tf);
 		setResourceBounds();
 	}
+	private void removeResourceStuff() {
+		remove(marketText);
+		remove(rpp1);
+		remove(rpp2);
+		remove(rpp3);
+		remove(nextPhase3);
+		remove(checkPrice);
+		remove(buyResource);
+		for(JTextField tf: buy)
+			remove(tf);
+	}
 
 	private void setResourceBounds() {
 //		for(int i = 0; i < 8; i++) {
@@ -761,12 +811,166 @@ public class PowerGridPanel extends JPanel {
 //		rpp1.setBounds( w/2-250, 80, 150, 150);
 //		rpp2.setBounds( w/2-425, 80, 150, 150);
 //		rpp2.setBounds( w/2-600, 80, 150, 150);
-		marketText.setBounds(440, h/2-100, 400, 50);
+		marketText.setBounds(440, h/2-75, 400, 50);
 		nextPhase3.setBounds(w-200, h-125, 150, 50);
 		checkPrice.setBounds(w-355, h-125, 150, 50);
 		buyResource.setBounds(w-510, h-125, 150, 50);
 	}
 	///resource buying end
+	///cityBuilding start
+	private void drawPhase4(Graphics g) {
+		g.setFont(f1.deriveFont(30f));
+		g.setColor(Color.WHITE);
+		fillScreen(g, usaMap);
+		g.drawImage(frame, 0, 0, w, h, null);
+		drawPlayers(g, false);
+		drawResourceMarket(g);
+		g.drawImage(menuBg, w-200, h-125, 150, 50, null);
+		if(!gs.isFirstRound() && startCity == null)
+			cityText.setText("Pick one of your cities to start from");
+		setCityBounds();
+	}
+	private void makeCityButtons() {
+		cityText = new JLabel("Pick a city to buy");
+		cityText.setForeground(Color.WHITE);
+		cityText.setFont(f1.deriveFont(24f));
+		cityText.setHorizontalAlignment(cityText.CENTER);
+		
+		buyCity = new JButton("Buy City");
+		buyCity.setForeground(Color.WHITE);
+		buyCity.setFocusPainted(false);
+		buyCity.setBorderPainted(false);
+		buyCity.setContentAreaFilled(false);
+		buyCity.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if (m.isPressed()) {
+					Player p = gs.getCurrentPlayer();
+					if(gs.isFirstRound()) {
+						if(currentCity != null)
+							if(p.getElektros() >= currentCity.getCost()) {	
+								p.addCity(currentCity);
+								p.buy(currentCity.getCost());
+								currentCity.addOwner(p);
+								currentCity = null;
+								gs.nextTurn();
+							}
+							else
+								cityText.setText("You don't have enough elektros");
+						else
+							cityText.setText("Select a city");
+					}
+					else {
+						int pathCost = gs.getGraph().getShortestPathCost(startCity, destCity);
+						if(pathCost != -1 && pathCost <= p.getElektros()) {
+							if(p.getElektros() >= destCity.getCost()) {
+								p.addCity(currentCity);
+								p.buy(currentCity.getCost());
+								currentCity.addOwner(p);
+								startCity = null;
+								destCity = null;
+								gs.nextTurn();
+							}
+							else
+								cityText.setText("You don't have enough elektros");
+						}
+						else
+							cityText.setText("You must select both a start and destination city");
+					}
+					repaint();
+				}
+			}
+		});
+		
+		cityButtons = new HashMap<>();
+		for(Entry<String, City> e: gs.getGraph().getCities().entrySet()) {
+			JButton b = new JButton(/* e.getKey() */);
+			b.setForeground(Color.WHITE);
+			b.setBackground(Color.BLACK);
+			final City c = e.getValue();
+			b.getModel().addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					ButtonModel m = (ButtonModel) e.getSource();
+					if (m.isPressed()) {
+						if(gs.isFirstRound()) {
+							cityText.setText("This is " + c + ", it costs " + c.getCost() + " elektros");
+							currentCity = c;
+						}
+						else {
+							if(startCity == null) {
+								startCity = c;
+								cityText.setText("Start City set to " + c);
+							}
+							else {
+								destCity = c;
+								cityText.setText("Start city is " + startCity + ", Destination City set to " + c
+										+ ", Path Cost: " + gs.getGraph().getShortestPathCost(startCity, destCity));
+							}
+						}
+						repaint();
+					}
+				}
+			});
+			cityButtons.put(b, e.getValue().getPoint());
+		}
+		out.println(cityButtons.size());
+	}
+	private void addCityButtons() {
+		add(cityText);
+		add(buyCity);
+		for(JButton b: cityButtons.keySet()) {
+			
+			add(b);
+		}
+	}
+	private void removeCityButtons() {
+		for(JButton b: cityButtons.keySet()) {
+			remove(b);
+		}
+	}
+	private void setCityBounds() {
+		cityText.setBounds(440, h-75, 400, 50);
+		buyCity.setBounds(w-200, h-125, 150, 50);
+		for(Entry<JButton, Point> e: cityButtons.entrySet()) {
+			JButton b = e.getKey();
+			b.setBounds((int)e.getValue().getX(), (int)e.getValue().getY(), 33, 33);
+		}
+	}
+	///cityBuilding end
+	///bureacracy start
+	public void drawPhase5(Graphics g) {
+		g.setFont(f1.deriveFont(24f));
+		g.setColor(Color.WHITE);
+		fillScreen(g, darkMap);
+		g.drawImage(menuBg, w/2-300, h/2-200, 600, 400, null);
+		ArrayList<Player> players = gs.getPlayers();
+		for(int i = 0; i < 4; i++) {
+			g.drawString(players.get(i) + " got " + (players.get(i).getElektros()-playertempelektros[i]) + " elektros."
+					+ " They now have " + players.get(i).getElektros(), w/2-230, 250+i*50);
+		}
+		nextPhase5.setBounds(w-200, h-125, 100, 50);
+		g.drawImage(menuBg, w-200, h-125, 100, 50, null);
+	}
+	public void setPlayerTempElektros(ArrayList<Player> players) {
+		for(int i = 0; i < 4; i++)
+			playertempelektros[i] = players.get(i).getElektros();
+	}
+	public void make5Button() {
+		nextPhase5 = new JButton("Next Phase");
+		nextPhase5.setForeground(Color.WHITE);
+		nextPhase5.setFocusPainted(false);
+		nextPhase5.setBorderPainted(false);
+		nextPhase5.setContentAreaFilled(false);
+		nextPhase5.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if (m.isPressed()) {
+					gs.nextPhase();
+				}
+			}
+		});
+	}
+	///bureaucracy end
 	private void fillScreen(Graphics g, BufferedImage b) {
 		g.drawImage(b, 38, 29, w-77, h-58, null);
 	}
@@ -828,15 +1032,16 @@ public class PowerGridPanel extends JPanel {
 			resources.put("oil", ImageIO.read(getClass().getResourceAsStream("images/resources/oil.png")));
 			resources.put("uranium", ImageIO.read(getClass().getResourceAsStream("images/resources/uranium.png")));
 			
+			usaMap = ImageIO.read(getClass().getResourceAsStream("images/maps/USA_MAP_2.jpg"));
 			darkMap = ImageIO.read(getClass().getResourceAsStream("images/maps/map3.jpg"));
 			emptyMap = ImageIO.read(getClass().getResourceAsStream("images/maps/USA_MAP_3.jpg"));
-			startScreen = ImageIO.read(getClass().getResourceAsStream("images/ui/startScreen.jpg"));
+			usaMap = emptyMap;
 			downArrow = ImageIO.read(getClass().getResourceAsStream("images/ui/downArrow.png"));
 			menuBg = ImageIO.read(getClass().getResourceAsStream("images/ui/menuBg.png"));
-			for(int i = 3; i < 40; i++) 
+			for(int i = 3; i <= 40; i++) 
 				plants.put(i, ImageIO.read(getClass().getResourceAsStream("images/powerplants/" + i + ".png")));
 			
-			for(int i = 42; i < 50; i+=2) {
+			for(int i = 42; i <= 50; i+=2) {
 				if(i!=48)
 					plants.put(i, ImageIO.read(getClass().getResourceAsStream("images/powerplants/" + i + ".png")));
 			}

@@ -1,11 +1,18 @@
+import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -24,7 +31,8 @@ public class GameState {
 	private Player currentPlayer, auctionStartPlayer;
 	private HashMap<Player, Boolean> canBid;
 	private boolean firstRound;
-	
+	private Graph graph;
+	private int phase4bug;
 	
 	public GameState() {
 		canBid = new HashMap<>();
@@ -37,8 +45,9 @@ public class GameState {
 		turn = 0;
 		step = 1;
 		frame = new JFrame("Power Grid");
-		pgPanel = new PowerGridPanel(1265, 685, this);
-		startPanel = new StartPanel(1265, 685, frame, pgPanel, this);
+		
+		graph = new Graph();
+		startPanel = new StartPanel(1265, 685, frame, this, graph);
 		frame.setSize(1280, 720);
 		frame.setResizable(false);
 		BufferedImage img = null;
@@ -54,7 +63,63 @@ public class GameState {
 		for(Player p: players)
 			canBid.put(p, true);
 		firstRound = true;
+		phase4bug = 0;
 	}
+	public void makeGraph() {
+		InputStream is = getClass().getResourceAsStream("cities.txt");
+		BufferedReader br = new BufferedReader(new InputStreamReader(is));
+		String line = "";
+		try {
+			while(br.readLine() != null){
+				line = br.readLine();
+				String region = line;
+				
+				for(int i = 0; i < 7; i++) {
+					String c1 = br.readLine();
+					int num = Integer.parseInt(br.readLine());
+					for(int j = 0; j < num; j++) {
+						StringTokenizer st = new StringTokenizer(br.readLine(), ";");
+						if(graph.getActiveRegions().get(region)) {
+							String c2 = st.nextToken();
+							out.println(c2);
+							int weight = Integer.parseInt(st.nextToken());
+							//out.println(c1 + "-" + c2);
+							graph.addCity(c1, c2, weight, region);
+						}
+					}
+				}
+			}
+			is = getClass().getResourceAsStream("cityPoints.txt");
+			br = new BufferedReader(new InputStreamReader(is));
+			line = "";
+			while((line=br.readLine()) != null) {
+				StringTokenizer st = new StringTokenizer(line, ";");
+				String city = st.nextToken();
+				try {
+					//out.println(graph.getCities().get(city).getRegion());
+					if(graph.getActiveRegions().get(graph.getCities().get(city).getRegion())) {
+						//out.println(graph.getCities().get(city));
+						String temp = st.nextToken();
+						String temp2 = st.nextToken();
+						//out.println(temp + " " + temp2);
+						Point p = new Point(Integer.parseInt(temp), Integer.parseInt(temp2));
+						graph.getCities().get(city).setPoint(p);
+					}
+				} catch (Exception e1) {}
+			}
+			out.println(graph.getCities());
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	public Graph getGraph() {
+		return graph;
+	}
+	
+	public void setPGPanel(PowerGridPanel p) {
+		pgPanel = p;
+	}
+	
 	public void passBid() {
 		canBid.put(currentPlayer, false);
 	}
@@ -87,8 +152,12 @@ public class GameState {
 		currentPlayer = players.get(0);
 		auctionStartPlayer = players.get(0);
 	}
+	public int getTurn() {
+		return turn;
+	}
 	public void nextPhase() {
 		turn = 0;
+		currentPlayer = players.get(0);
 		phase = (phase + 1) % 6;
 	}
 	public boolean isFirstRound() {
@@ -111,17 +180,31 @@ public class GameState {
 			}
 		}
 		else if(phase == 3) {
-			turn = (turn+1)%4;
-			currentPlayer = players.get(turn);
+			
+			out.println(currentPlayer);
+			if(turn == 3) {
+				nextPhase();
+			}
+			else {
+				turn++;
+				currentPlayer = players.get(turn);
+				phase4bug++;
+			}
 		}
 		else if(phase == 4) {
-			
+			phase4bug++;
+			if(turn == 3) {
+				nextPhase();
+				phase4bug = 0;
+			}
+			else if(phase4bug >= 5) {
+				turn++;
+				currentPlayer = players.get(turn);
+			}
 		}
 		else if(phase == 5) {
-			if(firstRound)
-				firstRound = false;
+			endRound();
 		}
-		
 	}
 	public boolean checkBidWinner() {
 		int k = 0;
@@ -558,27 +641,18 @@ public class GameState {
 		}
 		setTurn(0);
 	}
-
+	
 	public void endRound() {
+		pgPanel.setPlayerTempElektros(players);
 		setTurn(0);
-		boolean step3 = false;
 		for(int i = 0; i < players.size(); i++)
 		{
 			int canSupply = board.canSupply(players.get(turn));
-			int numSupplied = -1; //panel returns how many cities player chooses to supply
-			board.bureacracy(players.get(turn), numSupplied);
+			board.bureacracy(players.get(turn), canSupply);
 			board.updateResourceMarket(players);
-			if(step != 3 && board.removeHighestAndReplace(players) == 3)
-				step3 = true;
-			else if(step == 3) {
-				step3 = false;
-				board.removeLowestAndReplace(players);
-			}
+			board.removeLowestAndReplace(players);
 			nextTurn();	
 		}
-		if(step3)
-			step3();
-		setTurn(0);
 	}
 	
 	public void endGame() {

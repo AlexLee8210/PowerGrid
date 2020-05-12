@@ -4,17 +4,22 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.swing.JButton;
+
 import java.util.HashMap;
 import static java.lang.System.out;
 
 public class Graph {
 	
 	public HashMap<String, City> cities;
+	public HashMap<String, Boolean> isRegionActive;
 	
 	public Graph() {
 		cities = new HashMap<>();
+		isRegionActive = new HashMap<>();
 	}
-	public void addCity(String c1, String c2, int weight) {
+	public void addCity(String c1, String c2, int weight, String region) {
 		City source = new City(c1);
 		City destination = new City(c2);
 		
@@ -27,6 +32,7 @@ public class Graph {
 		else
 			cities.put(c2, destination);
 		
+		source.setRegion(region);
 		source.addNeighbor(destination, weight);
     }
 	public City get(String name) {
@@ -93,6 +99,8 @@ public class Graph {
 	
 	@SuppressWarnings("unchecked")
 	public ArrayList<City> getShortestPath(City src, City dest) { //returns shortest path from src to dest
+		if(src==null || dest == null)
+			return null;
 		HashMap<String, Object> res = makeSPT(src);
 		HashMap<City, City> prevNodes = (HashMap<City, City>) res.get("prevNodes");
 		
@@ -107,6 +115,8 @@ public class Graph {
 	}
 	@SuppressWarnings("unchecked")
 	public int getShortestPathCost(City src, City dest) { //returns shortest path from src to dest
+		if(src==null || dest == null)
+			return -1;
 		HashMap<String, Object> res = makeSPT(src);
 		HashMap<City, Integer> totalCosts = (HashMap<City, Integer>) res.get("totalCosts");
 		
@@ -126,4 +136,12 @@ public class Graph {
             temp.put(aa.getKey(), aa.getValue());
         return temp; 
     } 
+	
+	public void setRegionsActive(HashMap<JButton, Boolean> r) {
+		for(JButton k: r.keySet()) 
+			isRegionActive.put(k.getText(), r.get(k));
+	}
+	public HashMap<String, Boolean> getActiveRegions() {
+		return isRegionActive;
+	}
 }

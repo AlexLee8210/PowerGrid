@@ -1,3 +1,4 @@
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -9,20 +10,24 @@ public class City implements Comparable {
 	private LinkedHashMap<City, Integer> neighbors;
 	private boolean isActive;
 	private Player[] owners;
+	private Point point;
 	
 	public City(String name) {
 		this.name = name;
 		neighbors = new LinkedHashMap<City, Integer>();
 		owners = new Player[3];
+		point = new Point();
+		cost = 10;
 	}
-	
-	public City(String name, String region) {
-		this.name = name;
-		this.region = region;
-		neighbors = new LinkedHashMap<City, Integer>();
-		owners = new Player[3];
+	public void setRegion(String r) {
+		region = r;
 	}
-	
+	public void setPoint(Point p) {
+		point = p;
+	}
+	public Point getPoint() {
+		return point;
+	}
 	public void addNeighbor(City dest, int weight) {
 		neighbors.put(dest, weight);
 	}
@@ -33,6 +38,7 @@ public class City implements Comparable {
 		if(numOwners() == 3)
 			return false;
 		owners[numOwners()] = p;
+		cost+=5;
 		return true;
 	}
 	public int numOwners()

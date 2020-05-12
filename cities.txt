@@ -226,11 +226,11 @@ Atlanta;7
 Savannah;7
 Norfolk
 2
-Washington;5
+Washington D.C.;5
 Raleigh;3
 ............................NORTHWEST............................
-Northwest
-Washington
+Northeast
+Washington D.C.
 3
 Norfolk;5
 Philadelphia;3
@@ -241,7 +241,7 @@ Buffalo;7
 Detroit;6
 Cincinnati;7
 Raleigh;7
-Washington;6
+Washington D.C.;6
 Detroit
 5
 Duluth;15
@@ -264,4 +264,4 @@ New York;3
 Philadelphia
 2
 New York;0
-Washington;3
+Washington D.C.;3

@@ -383,7 +383,7 @@ public class Board {
 		for(PowerPlant p : player.getPlants())
 		{
 			if(p.canPowerCity())
-				canPower += p.getNum();
+				canPower += p.getPower();
 		}
 		if(canPower < toReturn)
 			toReturn = canPower;

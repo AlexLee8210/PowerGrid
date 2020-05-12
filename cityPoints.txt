@@ -1,0 +1,42 @@
+Seattle;90;70
+Portland;61;132
+San Francisco;61;336
+Los Angeles;141;421
+San Diego;190;477
+Phoenix;315;451
+Las Vegas;237;377
+Salt Lake City;311;279
+Boise;218;191
+Santa Fe;434;400
+Denver;453;278
+Cheyenne;469;227
+Billings;397;139
+Houston;647;525
+Dallas;644;461
+Oklahoma City;627;405
+Kansas City;666;331
+Omaha;640;263
+Minneapolis;699;163
+Fargo;625;129
+Duluth;720;108
+Chicago;804;247
+St. Louis;765;331
+Memphis;765;411
+New Orleans;763;531
+Birmingham;839;459
+Atlanta;909;440
+Knoxville;896;365
+Cincinnati;897;315
+Detroit;899;230
+Miami;999;615
+Tampa;923;545
+Jacksonville;975;526
+Savannah;979;475
+Raleigh;1031;407
+Norfolk;1092;371
+Washington D.C.;1055;306
+Pittsburgh;985;285
+Buffalo;1023;222
+Philadelphia;1106;297
+New York;1141;261
+Boston;1184;218
