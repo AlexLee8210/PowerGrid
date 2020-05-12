@@ -58,7 +58,7 @@ public class PowerGridPanel extends JPanel {
 	private HashMap<City, JButton> cityButtons;
 	private JLabel cityText;
 	private City currentCity, startCity, destCity;
-	private JButton buyCity, resetCities;
+	private JButton buyCity, resetCities, nextPhase4;
 	//CityBuilding end
 	//phase5 start
 	private int[] playertempelektros;
@@ -94,11 +94,19 @@ public class PowerGridPanel extends JPanel {
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		if(win) {
+			remove5();
 			g.setFont(f1.deriveFont(24f));
 			g.setColor(Color.WHITE);
 			fillScreen(g, darkMap);
 			g.drawImage(menuBg, w/2-300, h/2-200, 600, 400, null);
-			g.drawString(gs.getWinner() + " wins", w/2-100, h/2+50);
+			//g.drawString(gs.getWinner() + " wins", w/2-120, h/2+50);
+			TreeMap<Player, Integer> scoreBoard = gs.scoreBoard();
+			int i = 0;
+			for(Player p: scoreBoard.keySet()) {
+				i++;
+				g.drawString(i+". " + p + " with " + scoreBoard.get(p) + " powered cities, "
+						+ p.getElektros() + " elektros, " + p.getCities().size() + " cities", w/2-220, 220+i*50);
+			}
 		}
 		else {
 			int phase = gs.getPhase();
@@ -843,15 +851,17 @@ public class PowerGridPanel extends JPanel {
 		drawResourceMarket(g);
 		g.drawImage(menuBg, w-200, h-125, 150, 50, null);
 		g.drawImage(menuBg, w-200, h-180, 150, 50, null);
+		g.drawImage(menuBg, w-200, h-235, 150, 50, null);
 		if(!gs.isFirstRound() && startCity == null)
 			cityText.setText("Pick one of your cities to start from");
 		for(City c: gs.getCurrentPlayer().getCities()) {
 			cityButtons.get(c).setBackground(Color.GREEN);
 		}
 		for(Player pl: gs.getPlayers()) {
-			for(City c: pl.getCities()) {
-				cityButtons.get(c).setBackground(Color.RED);
-			}
+			if(!pl.equals(gs.getCurrentPlayer()))
+				for(City c: pl.getCities()) {
+					cityButtons.get(c).setBackground(Color.RED);
+				}
 		}
 		setCityBounds();
 	}
@@ -871,7 +881,7 @@ public class PowerGridPanel extends JPanel {
 				ButtonModel m = (ButtonModel) e.getSource();
 				if (m.isPressed()) {
 					Player p = gs.getCurrentPlayer();
-					if(gs.isFirstRound()) {
+					if(gs.isFirstRound() && p.getCities().size() == 0) {
 						if(currentCity != null)
 							if(p.getElektros() >= currentCity.getCost()) {
 								boolean canBuy = true;
@@ -883,7 +893,16 @@ public class PowerGridPanel extends JPanel {
 									p.buy(currentCity.getCost());
 									currentCity.addOwner(p);
 									currentCity = null;
-									gs.nextTurn();
+									for(City c: gs.getCurrentPlayer().getCities()) {
+										cityButtons.get(c).setBackground(Color.GREEN);
+									}
+									for(Player pl: gs.getPlayers()) {
+										if(!pl.equals(gs.getCurrentPlayer()))
+											for(City c: pl.getCities()) {
+												cityButtons.get(c).setBackground(Color.RED);
+											}
+									}
+									cityText.setText("Select a city to start from");
 								}
 								else
 									cityText.setText("Someone else owns this city");
@@ -910,12 +929,17 @@ public class PowerGridPanel extends JPanel {
 									currentCity.addOwner(p);
 									startCity = null;
 									destCity = null;
-									
+									for(City c: gs.getCurrentPlayer().getCities()) {
+										cityButtons.get(c).setBackground(Color.GREEN);
+									}
+									for(Player pl: gs.getPlayers()) {
+										for(City c: pl.getCities()) {
+											cityButtons.get(c).setBackground(Color.RED);
+										}
+									}
 									if(gs.isWinner()) {
 										win = true;
 									}
-									else
-										gs.nextTurn();
 								}
 							}
 							else
@@ -923,6 +947,30 @@ public class PowerGridPanel extends JPanel {
 						}
 						else
 							cityText.setText("You must select both a start and destination city");
+					}
+					repaint();
+				}
+			}
+		});
+		
+		nextPhase4 = new JButton("Next Turn");
+		nextPhase4.setFont(f1.deriveFont(20f));
+		nextPhase4.setForeground(Color.WHITE);
+		nextPhase4.setFocusPainted(false);
+		nextPhase4.setOpaque(false);
+		nextPhase4.setContentAreaFilled(false);
+		nextPhase4.setBorderPainted(false);
+		nextPhase4.getModel().addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				ButtonModel m = (ButtonModel) e.getSource();
+				if(m.isPressed()) {
+					if(gs.isFirstRound() && gs.getCurrentPlayer().getCities().size() == 0)
+						cityText.setText("You must buy a city in the first round!");
+					else {
+						gs.nextTurn();
+						currentCity = null;
+						startCity = null;
+						destCity = null;
 					}
 					repaint();
 				}
@@ -938,7 +986,7 @@ public class PowerGridPanel extends JPanel {
 			public void stateChanged(ChangeEvent e) {
 				ButtonModel m = (ButtonModel) e.getSource();
 				if (m.isPressed()) {
-					if(gs.isFirstRound()) {
+					if(gs.isFirstRound() && gs.getCurrentPlayer().getCities().size() == 0) {
 						currentCity = null;
 						cityText.setText("Reset selected cities");
 					}
@@ -962,7 +1010,7 @@ public class PowerGridPanel extends JPanel {
 				public void stateChanged(ChangeEvent e) {
 					ButtonModel m = (ButtonModel) e.getSource();
 					if (m.isPressed()) {
-						if(gs.isFirstRound()) {
+						if(gs.isFirstRound() && gs.getCurrentPlayer().getCities().size() == 0) {
 							cityText.setText("This is " + c + ", it costs " + c.getCost() + " elektros");
 							currentCity = c;
 						}
@@ -978,8 +1026,8 @@ public class PowerGridPanel extends JPanel {
 							}
 							else {
 								destCity = c;
-								cityText.setText("Start city is " + startCity + ", Destination City set to " + c
-										+ ", Path Cost: " + gs.getGraph().getShortestPathCost(startCity, destCity));
+								cityText.setText("Start city: " + startCity + " Destination City: " + c
+										+ " Path Cost: " + gs.getGraph().getShortestPathCost(startCity, destCity));
 							}
 						}
 						repaint();
@@ -993,6 +1041,7 @@ public class PowerGridPanel extends JPanel {
 		add(cityText);
 		add(buyCity);
 		add(resetCities);
+		add(nextPhase4);
 		for(Entry<City, JButton> e: cityButtons.entrySet()) {
 			add(e.getValue());
 		}
@@ -1004,11 +1053,13 @@ public class PowerGridPanel extends JPanel {
 		remove(buyCity);
 		remove(cityText);
 		remove(resetCities);
+		remove(nextPhase4);
 	}
 	private void setCityBounds() {
 		cityText.setBounds(390, h-75, 500, 50);
-		buyCity.setBounds(w-200, h-125, 150, 50);
-		resetCities.setBounds(w-200, h-180, 150, 50);
+		nextPhase4.setBounds(w-200, h-125, 150, 50);
+		buyCity.setBounds(w-200, h-180, 150, 50);
+		resetCities.setBounds(w-200, h-235, 150, 50);
 		for(Entry<City, JButton> e: cityButtons.entrySet()) {
 			JButton b = e.getValue();
 			b.setBounds((int)e.getKey().getPoint().getX(), (int)e.getKey().getPoint().getY(), 33, 33);
@@ -1045,6 +1096,8 @@ public class PowerGridPanel extends JPanel {
 				ButtonModel m = (ButtonModel) e.getSource();
 				if (m.isPressed()) {
 					gs.nextPhase();
+					win = true;
+					repaint();
 				}
 			}
 		});

@@ -32,6 +32,7 @@ public class GameState {
 	private boolean firstRound;
 	private Graph graph;
 	private int phase4bug;
+	private int[] cansupplytemp;
 	
 	public GameState() {
 		canBid = new HashMap<>();
@@ -63,6 +64,7 @@ public class GameState {
 			canBid.put(p, true);
 		firstRound = true;
 		phase4bug = 0;
+		cansupplytemp = new int[4];
 	}
 	public void makeGraph() {
 		InputStream is = getClass().getResourceAsStream("cities.txt");
@@ -651,6 +653,7 @@ public class GameState {
 		for(int i = 0; i < players.size(); i++)
 		{
 			int canSupply = board.canSupply(players.get(i));
+			cansupplytemp[i] = canSupply;
 			out.println("canSupply: " + canSupply);
 			board.bureacracy(players.get(i), canSupply);
 			board.updateResourceMarket(players);
@@ -663,6 +666,18 @@ public class GameState {
 		//panel displays win screen 
 	}
 	
+	public TreeMap<Player, Integer> scoreBoard() {
+		int i = 0;
+		TreeMap<Player, Integer> scoreBoard = new TreeMap<>(Collections.reverseOrder());
+		for(Player p: players) {
+			scoreBoard.put(p, cansupplytemp[i]);
+			i++;
+		}
+		return scoreBoard;
+	}
+	public int getCanSupply(int index) {
+		return cansupplytemp[index];
+	}
 	public void step3()
 	{
 		board.step3();
