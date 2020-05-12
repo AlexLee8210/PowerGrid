@@ -400,13 +400,25 @@ public class Board {
 	public Player getWinner(ArrayList<Player> players)//possibly faulty
 	{
 		int index = -1, numSupply = Integer.MIN_VALUE;
+		boolean tie = false;
+		int tieIndex = -1;
 		for(int i = 0; i < players.size(); i++)
 		{
 			if(canSupply(players.get(i)) > numSupply)
 			{
 				index = i;
 				numSupply = canSupply(players.get(i));
+				tie = false;
 			}
+			else if(canSupply(players.get(i)) == numSupply)
+			{
+				tie = true;
+				tieIndex = i;
+			}
+		}
+		if(tie) {
+			if(players.get(tieIndex).getLargestPlant().getNum() > players.get(index).getLargestPlant().getNum())
+				index = tieIndex;
 		}
 		return players.get(index);
 	}
