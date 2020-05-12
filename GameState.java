@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Iterator;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -80,8 +79,7 @@ public class GameState {
 					for(int j = 0; j < num; j++) {
 						StringTokenizer st = new StringTokenizer(br.readLine(), ";");
 						if(graph.getActiveRegions().get(region)) {
-							String c2 = st.nextToken();
-							out.println(c2);
+							String c2 = st.nextToken();;
 							int weight = Integer.parseInt(st.nextToken());
 							//out.println(c1 + "-" + c2);
 							graph.addCity(c1, c2, weight, region);
@@ -107,7 +105,6 @@ public class GameState {
 					}
 				} catch (Exception e1) {}
 			}
-			out.println(graph.getCities());
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -160,11 +157,13 @@ public class GameState {
 		currentPlayer = players.get(0);
 		if(phase == 5)
 			firstRound = false;
-		phase = (phase + 1) % 6;
-		if(!firstRound && phase == 0)
-			phase++;
+		phase = (phase + 1) % 5;
+		if(phase == 0) {
+			phase = 5;
+			endRound();
+		}
 	}
-	public boolean isFirstRound() {
+	public boolean isFirstRound() {	
 		return firstRound;
 	}
 	public void nextTurn() {
@@ -207,6 +206,7 @@ public class GameState {
 			}
 		}
 		else if(phase == 5) {
+			out.println("PHASE : " + phase);
 			endRound();
 		}
 	}
@@ -541,64 +541,64 @@ public class GameState {
 		return toReturn;
 	}
 
-	public void buyCities() {
-		setTurn(3);
-		boolean step3 = false;
-		for(int i = 0; i < 4; i++)
-		{
-			boolean clickedNext = false;
-			while(true)
-			{
-				clickedNext = false; //panel checks if player clicks next(doesnt buy a city)
-				if(clickedNext)
-					break;
-				ArrayList<City> canConnect = board.canConnect(players.get(turn));
-				City city = new City("urmum"); //panel returns the city that the player chooses
-				//use canConnect for the cities that the player can connect to
-				int numOwners = city.numOwners();
-				//put player's house on the city, use numOwners for which place to put it on
-				board.buyCity(city, players.get(turn));
-				if(board.checkPowerPlant(players.get(turn), players) == 3);
-					step3 = true;
-				if(step == 3) //NEW
-					step3 = false;
-			}
-			nextTurnReverse();
-		}
-		setTurn(0);
-		boolean step2 = false;
-		if(step >= 2)
-			step2 = true;
-		else if(step == 1)
-			step2 = false;
-		if(!step2)
-		{
-			for(int i = 0; i < players.size(); i++)
-			{
-				if(players.get(i).getCities().size() >= 7)
-				{
-					setStep(2);
-					step2 = true;
-				}
-			}
-			if(step2)
-			{
-				if(board.removeLowestAndReplace(players) == 3);
-				step3 = true;
-			}
-		}
-		for(int i = 0; i < players.size(); i++)
-		{
-			if(players.get(i).getCities().size() >= 17)
-				endGame();
-		}
-		if(step3)
-		{
-			step3();
-		}	
-		setTurn(0);
-	}
-	
+//	public void buyCities() {
+//		setTurn(3);
+//		boolean step3 = false;
+//		for(int i = 0; i < 4; i++)
+//		{
+//			boolean clickedNext = false;
+//			while(true)
+//			{
+//				clickedNext = false; //panel checks if player clicks next(doesnt buy a city)
+//				if(clickedNext)
+//					break;
+//				ArrayList<City> canConnect = board.canConnect(players.get(turn));
+//				City city = new City("urmum"); //panel returns the city that the player chooses
+//				//use canConnect for the cities that the player can connect to
+//				int numOwners = city.numOwners();
+//				//put player's house on the city, use numOwners for which place to put it on
+//				board.buyCity(city, players.get(turn));
+//				if(board.checkPowerPlant(players.get(turn), players) == 3);
+//					step3 = true;
+//				if(step == 3) //NEW
+//					step3 = false;
+//			}
+//			nextTurnReverse();
+//		}
+//		setTurn(0);
+//		boolean step2 = false;
+//		if(step >= 2)
+//			step2 = true;
+//		else if(step == 1)
+//			step2 = false;
+//		if(!step2)
+//		{
+//			for(int i = 0; i < players.size(); i++)
+//			{
+//				if(players.get(i).getCities().size() >= 7)
+//				{
+//					setStep(2);
+//					step2 = true;
+//				}
+//			}
+//			if(step2)
+//			{
+//				if(board.removeLowestAndReplace(players) == 3);
+//				step3 = true;
+//			}
+//		}
+//		for(int i = 0; i < players.size(); i++)
+//		{
+//			if(players.get(i).getCities().size() >= 17)
+//				endGame();
+//		}
+//		if(step3)
+//		{
+//			step3();
+//		}	
+//		setTurn(0);
+//	}
+//	
 	public void buyResources() {
 		setTurn(3);
 		for(int i = 0; i < 4; i++)
@@ -648,19 +648,18 @@ public class GameState {
 	
 	public void endRound() {
 		pgPanel.setPlayerTempElektros(players);
-		setTurn(0);
 		for(int i = 0; i < players.size(); i++)
 		{
-			int canSupply = board.canSupply(players.get(turn));
-			board.bureacracy(players.get(turn), canSupply);
+			int canSupply = board.canSupply(players.get(i));
+			out.println("canSupply: " + canSupply);
+			board.bureacracy(players.get(i), canSupply);
 			board.updateResourceMarket(players);
 			board.removeLowestAndReplace(players);
-			nextTurn();	
 		}
 	}
 	
-	public void endGame() {
-		Player winner = board.getWinner(players);
+	public Player getWinner() {
+		return board.getWinner(players);
 		//panel displays win screen 
 	}
 	
@@ -678,5 +677,13 @@ public class GameState {
 
 	public String[] chosenAreas() {
 		return null;
+	}
+	public boolean isWinner() {
+		for(int i = 0; i < players.size(); i++)
+		{
+			if(players.get(i).getCities().size() >= 17)
+				return true;
+		}
+		return false;
 	}
 }

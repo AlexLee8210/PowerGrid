@@ -392,7 +392,10 @@ public class Board {
 	public void bureacracy(Player player, int num)
 	{
 		for(int i = 0; i < player.getPlants().size(); i++)
-			player.getPlants().get(i).consumeMats();
+		{
+			if(player.getPlants().get(i).canPowerCity())
+				player.getPlants().get(i).consumeMats();
+		}
 		if(num > 20)
 			num = 20;
 		player.addElektros(paymentTable.get(num));
