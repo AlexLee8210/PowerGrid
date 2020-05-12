@@ -1096,7 +1096,6 @@ public class PowerGridPanel extends JPanel {
 				ButtonModel m = (ButtonModel) e.getSource();
 				if (m.isPressed()) {
 					gs.nextPhase();
-					win = true;
 					repaint();
 				}
 			}
