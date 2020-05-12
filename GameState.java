@@ -158,7 +158,11 @@ public class GameState {
 	public void nextPhase() {
 		turn = 0;
 		currentPlayer = players.get(0);
+		if(phase == 5)
+			firstRound = false;
 		phase = (phase + 1) % 6;
+		if(!firstRound && phase == 0)
+			phase++;
 	}
 	public boolean isFirstRound() {
 		return firstRound;

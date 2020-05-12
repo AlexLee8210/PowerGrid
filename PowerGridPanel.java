@@ -87,6 +87,7 @@ public class PowerGridPanel extends JPanel {
 		makeCityButtons();
 		
 		playertempelektros = new int[4];
+		make5();
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -95,14 +96,16 @@ public class PowerGridPanel extends JPanel {
 		if(phase == 1) {
 			if(gs.isFirstRound())
 				gs.randomizePlayers();
-			else
+			else {
 				gs.determineOrder();
+				remove5();
+			}
 			gs.nextPhase();
 			repaint();
 			prevPhase = 1;
 		}
 		else if(phase == 2) {
-			if(prevPhase == 5) {
+			if(prevPhase == 1) {
 				addAuctionStuff();
 			}
 			drawPhase2(g);
@@ -132,8 +135,10 @@ public class PowerGridPanel extends JPanel {
 			prevPhase = 4;
 		}
 		else if(phase == 5) {
-			if(prevPhase == 4)
+			if(prevPhase == 4) {
 				removeCityButtons();
+				add5();
+			}
 			drawPhase5(g);
 			prevPhase = 5;
 		}
@@ -927,6 +932,8 @@ public class PowerGridPanel extends JPanel {
 		for(JButton b: cityButtons.keySet()) {
 			remove(b);
 		}
+		remove(buyCity);
+		remove(cityText);
 	}
 	private void setCityBounds() {
 		cityText.setBounds(440, h-75, 400, 50);
@@ -955,7 +962,7 @@ public class PowerGridPanel extends JPanel {
 		for(int i = 0; i < 4; i++)
 			playertempelektros[i] = players.get(i).getElektros();
 	}
-	public void make5Button() {
+	public void make5() {
 		nextPhase5 = new JButton("Next Phase");
 		nextPhase5.setForeground(Color.WHITE);
 		nextPhase5.setFocusPainted(false);
@@ -969,6 +976,12 @@ public class PowerGridPanel extends JPanel {
 				}
 			}
 		});
+	}
+	public void add5() {
+		add(nextPhase5);
+	}
+	public void remove5() {
+		remove(nextPhase5);
 	}
 	///bureaucracy end
 	private void fillScreen(Graphics g, BufferedImage b) {
